@@ -3,37 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ข้อปฏิบัติประจำกลุ่ม</title>
+  <title>ข้อปฏิบัติประจำกลุ่ม - Namobot</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
-  <div class="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 space-y-5 border border-slate-100">
-    <div class="flex items-center justify-between border-b pb-3">
-      <div class="flex items-center space-x-2 text-emerald-600">
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 text-slate-100">
+  <div class="bg-slate-800/90 border border-slate-700 w-full max-w-md rounded-2xl shadow-xl p-6 space-y-5 backdrop-blur-md">
+    
+    <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+      <div class="flex items-center space-x-2 text-sky-400">
         <i class="fa-solid fa-circle-info text-lg"></i>
-        <h1 class="font-bold text-slate-800 text-lg">ข้อปฏิบัติประจำกลุ่ม</h1>
+        <h1 class="font-bold text-slate-100 text-base">ข้อปฏิบัติประจำกลุ่ม</h1>
       </div>
-      <button onclick="copyRules()" class="text-xs font-semibold text-slate-500 hover:text-emerald-600 flex items-center gap-1 transition">
+      <button onclick="copyRules()" class="text-xs font-semibold text-slate-400 hover:text-sky-400 flex items-center gap-1 transition">
         <i class="fa-regular fa-copy"></i> คัดลอก
       </button>
     </div>
 
     <div id="content-box" class="min-h-[160px] flex items-center justify-center">
-      <div id="loading" class="text-slate-400 text-sm flex items-center gap-2">
-        <i class="fa-solid fa-spinner animate-spin"></i> กำลังโหลดข้อมูล...
+      <div id="loading" class="text-slate-400 text-xs flex items-center gap-2">
+        <i class="fa-solid fa-spinner animate-spin text-sky-400"></i> กำลังโหลดกฎระเบียบ...
       </div>
-      <div id="rules-text" class="hidden text-slate-700 text-sm whitespace-pre-line leading-relaxed w-full"></div>
+      <div id="rules-text" class="hidden text-slate-300 text-xs whitespace-pre-line leading-relaxed w-full"></div>
     </div>
 
-    <button onclick="shareRules()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+    <button onclick="shareRules()" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
       <i class="fa-solid fa-share-nodes"></i> แชร์กฎกลุ่มนี้ไปยังแชต
     </button>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyBz-Fp81B6MBcA0rcr4ZEH-E6Q3kzfvfMamlVnzQsw6YiHXyzmry1uQTJ00v3bhhQWlA/exec";
+    // Web App URL หลักที่เชื่อมกับ Google Sheets ชีท 'url' (ช่อง A1)
+    const API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
     let currentRules = "";
 
     async function fetchRules() {
@@ -41,14 +43,16 @@
         const res = await fetch(`${API_URL}?action=getRules`);
         const data = await res.json();
         if (data.status === "success") {
-          currentRules = data.text || "ยังไม่มีข้อมูลกฎระเบียบ";
+          currentRules = data.text || "ยังไม่มีข้อมูลกฎระเบียบในระบบ";
           document.getElementById('loading').classList.add('hidden');
           const rulesEl = document.getElementById('rules-text');
           rulesEl.innerText = currentRules;
           rulesEl.classList.remove('hidden');
+        } else {
+          document.getElementById('loading').innerHTML = '<span class="text-red-400">ไม่สามารถโหลดข้อมูลได้</span>';
         }
       } catch (e) {
-        document.getElementById('loading').innerHTML = '<span class="text-red-500">ไม่สามารถโหลดข้อมูลได้</span>';
+        document.getElementById('loading').innerHTML = '<span class="text-red-400">เกิดข้อผิดพลาดในการเชื่อมต่อ</span>';
       }
     }
 
@@ -64,6 +68,8 @@
         liff.shareTargetPicker([
           { "type": "text", "text": "📖 ข้อปฏิบัติประจำกลุ่ม:\n\n" + currentRules }
         ]).then(() => liff.closeWindow()).catch(err => console.error(err));
+      } else {
+        alert("เบราว์เซอร์นี้ไม่รองรับการแชร์อัตโนมัติ");
       }
     }
 
