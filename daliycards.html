@@ -7,264 +7,107 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- Canvas Confetti & GSAP animation libraries -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Prompt:wght@300;400;500;600&display=swap');
-
-    body {
-      font-family: 'Prompt', sans-serif;
-      background: radial-gradient(circle at center, #111827 0%, #030712 100%);
-      color: #F3F4F6;
-      touch-action: manipulation;
-    }
-
-    .font-cinzel {
-      font-family: 'Cinzel', serif;
-    }
-
-    /* 3D Glassmorphism & Gold Borders */
-    .gold-gradient-text {
-      background: linear-gradient(135deg, #FFF7AD 0%, #FFA900 50%, #B8860B 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .gold-border {
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
-    }
-
-    /* Perspective Container for 3D Cards */
-    .perspective-container {
-      perspective: 1200px;
-    }
-
-    /* 3D Card Flip Animation */
-    .card-3d-wrap {
-      transform-style: preserve-3d;
-      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .card-3d-wrap.flipped {
-      transform: rotateY(180deg);
-    }
-
-    .card-front, .card-back {
-      backface-visibility: hidden;
-      border-radius: 1rem;
-    }
-
-    .card-back {
-      transform: rotateY(180deg);
-    }
-
-    /* Shimmer Effect */
-    .shimmer {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .shimmer::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        60deg,
-        transparent 30%,
-        rgba(255, 215, 0, 0.25) 50%,
-        transparent 70%
-      );
-      transform: rotate(30deg);
-      animation: shimmerAnim 4s infinite linear;
-    }
-
-    @keyframes shimmerAnim {
-      0% { transform: translate(-100%, -100%) rotate(30deg); }
-      100% { transform: translate(100%, 100%) rotate(30deg); }
-    }
-
-    /* Card Fan & Spread positioning */
-    .deck-card {
-      position: absolute;
-      width: 130px;
-      height: 200px;
-      cursor: pointer;
-      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    }
+    body { font-family: 'Prompt', sans-serif; background: radial-gradient(circle at center, #111827 0%, #030712 100%); color: #F3F4F6; touch-action: manipulation; }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    .gold-gradient-text { background: linear-gradient(135deg, #FFF7AD 0%, #FFA900 50%, #B8860B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
+    .perspective-container { perspective: 1200px; }
+    .card-3d-wrap { transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .card-3d-wrap.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { backface-visibility: hidden; border-radius: 1rem; }
+    .card-back { transform: rotateY(180deg); }
+    .deck-card { position: absolute; width: 130px; height: 200px; cursor: pointer; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
   </style>
 </head>
-
 <body class="min-h-screen flex flex-col justify-between p-4 overflow-x-hidden select-none">
-
-  <!-- Header Section -->
   <header class="text-center pt-4 space-y-1">
     <p class="font-cinzel text-xs tracking-[0.3em] gold-gradient-text uppercase font-bold">Sacred Guidance</p>
     <h1 class="text-xl font-bold text-amber-100/90 tracking-wide font-cinzel">Cards Of The Day</h1>
     <p id="sub-title" class="text-xs text-slate-400 font-light">ตั้งจิตอธิษฐานแล้วเลือกไพ่ประจำวันของคุณ 1 ใบ</p>
   </header>
 
-  <!-- Main Interactive Area -->
   <main class="flex-1 flex flex-col items-center justify-center my-6 relative w-full max-w-md mx-auto perspective-container">
-    
-    <!-- 1. Card Deck Container (สำรับไพ่) -->
-    <div id="deck-container" class="relative w-full h-[260px] flex items-center justify-center">
-      <!-- Generated Cards for Deck Animation dynamically via JS -->
-    </div>
-
-    <!-- 2. Selected Revealed Card (ใบที่เลือกแสดงผลแบบ 3D) -->
+    <div id="deck-container" class="relative w-full h-[260px] flex items-center justify-center"></div>
     <div id="revealed-card-box" class="hidden w-[220px] h-[340px] relative perspective-container">
       <div id="card-3d" class="card-3d-wrap w-full h-full relative shadow-2xl rounded-2xl">
-        
-        <!-- Card Front (ด้านหลังไพ่) -->
-        <div class="card-front absolute inset-0 w-full h-full gold-border bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 p-2 flex flex-col items-center justify-center shimmer">
+        <div class="card-front absolute inset-0 w-full h-full gold-border bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 p-2 flex items-center justify-center">
           <div class="w-full h-full border border-amber-500/30 rounded-xl flex items-center justify-center bg-black/40">
             <i class="fa-solid fa-sparkles text-3xl gold-gradient-text animate-pulse"></i>
           </div>
         </div>
-
-        <!-- Card Back (หน้าไพ่จริงที่สุ่มได้) -->
         <div class="card-back absolute inset-0 w-full h-full gold-border rounded-2xl overflow-hidden bg-slate-900 shadow-[0_0_30px_rgba(212,175,55,0.3)]">
           <img id="card-img-result" src="" alt="Card of the day" class="w-full h-full object-cover">
         </div>
-
       </div>
     </div>
-
-    <!-- Loading Glow Text -->
     <div id="loading-text" class="hidden mt-6 text-amber-200/80 text-xs flex items-center gap-2">
       <i class="fa-solid fa-wand-magic-sparkles animate-spin text-amber-400"></i>
       <span>กำลังสื่อจิตเชื่อมต่อการ์ด...</span>
     </div>
-
   </main>
 
-  <!-- Bottom Action Buttons -->
   <footer class="w-full max-w-md mx-auto space-y-3 pb-4">
-    
-    <!-- Shuffle Button -->
-    <button id="btn-shuffle" onclick="shuffleAndSpread()" class="w-full gold-border bg-gradient-to-r from-amber-900/40 via-amber-800/60 to-amber-900/40 hover:from-amber-800/60 hover:to-amber-800/60 text-amber-100 font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
+    <button id="btn-shuffle" onclick="shuffleAndSpread()" class="w-full gold-border bg-gradient-to-r from-amber-900/40 via-amber-800/60 to-amber-900/40 text-amber-100 font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
       <i class="fa-solid fa-arrows-rotate text-amber-400"></i> สับไพ่ใหม่
     </button>
-
-    <!-- Share Button (เมื่อเปิดไพ่แล้ว) -->
-    <button id="btn-share" onclick="shareCardResult()" class="hidden w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-xl">
+    <button id="btn-share" onclick="shareCardResult()" class="hidden w-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-xl">
       <i class="fa-solid fa-share-nodes"></i> แชร์คำทำนายลงในแชต
     </button>
-
   </footer>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwv8AaKJKjDKqGrh4v0Oskq-o9_yqRptR-E5sY9fP5c5U11aIs7pD_21t6vO2T4X5pS/exec";
+    const API_URL = "ใส่_WEB_APP_URL_ของคุณที่นี่/exec";
     let selectedCardUrl = "";
     let isFlipping = false;
 
-    // สร้างสำรับไพ่ลอย 5 ใบสำหรับให้กดเลือก
     function renderDeck() {
       const container = document.getElementById('deck-container');
       container.innerHTML = '';
-      
-      const totalCards = 5;
-      for (let i = 0; i < totalCards; i++) {
+      for (let i = 0; i < 5; i++) {
         const card = document.createElement('div');
-        card.className = `deck-card gold-border bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 p-1.5 rounded-xl shadow-2xl shimmer`;
-        card.innerHTML = `
-          <div class="w-full h-full border border-amber-500/30 rounded-lg flex items-center justify-center bg-black/40">
-            <i class="fa-solid fa-star text-amber-500/40 text-xs"></i>
-          </div>
-        `;
-        
-        // คำนวณคลี่ไพ่เป็นพัด 3D
-        const angle = (i - 2) * 12; // -24, -12, 0, 12, 24 deg
-        const translateX = (i - 2) * 35; // กระจายแนวแกน X
-        const translateY = Math.abs(i - 2) * 8; // ความโค้งแกน Y
-
-        gsap.set(card, {
-          rotation: angle,
-          x: translateX,
-          y: translateY,
-          zIndex: i
-        });
-
-        // Event เมื่อแตะเลือกไพ่
+        card.className = `deck-card gold-border bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 p-1.5 rounded-xl shadow-2xl`;
+        card.innerHTML = `<div class="w-full h-full border border-amber-500/30 rounded-lg flex items-center justify-center bg-black/40"><i class="fa-solid fa-star text-amber-500/40 text-xs"></i></div>`;
+        const angle = (i - 2) * 12;
+        const translateX = (i - 2) * 35;
+        const translateY = Math.abs(i - 2) * 8;
+        gsap.set(card, { rotation: angle, x: translateX, y: translateY, zIndex: i });
         card.addEventListener('click', () => pickCard(card));
         container.appendChild(card);
       }
     }
 
-    // แอนิเมชันสับไพ่
     function shuffleAndSpread() {
       if (isFlipping) return;
-      
       document.getElementById('revealed-card-box').classList.add('hidden');
       document.getElementById('deck-container').classList.remove('hidden');
       document.getElementById('btn-share').classList.add('hidden');
       document.getElementById('sub-title').innerText = "ตั้งจิตอธิษฐานแล้วเลือกไพ่ประจำวันของคุณ 1 ใบ";
-
       const cards = document.querySelectorAll('.deck-card');
-      
-      // รวมไพ่เข้าตรงกลาง
-      gsap.to(cards, {
-        x: 0,
-        y: 0,
-        rotation: 0,
-        duration: 0.4,
-        stagger: 0.05,
-        onComplete: () => {
-          // กระจายออกเป็นพัดอีกครั้ง
-          cards.forEach((card, i) => {
-            const angle = (i - 2) * 14;
-            const translateX = (i - 2) * 38;
-            const translateY = Math.abs(i - 2) * 10;
-
-            gsap.to(card, {
-              rotation: angle,
-              x: translateX,
-              y: translateY,
-              duration: 0.6,
-              ease: "back.out(1.7)",
-              delay: i * 0.05
-            });
-          });
-        }
-      });
+      gsap.to(cards, { x: 0, y: 0, rotation: 0, duration: 0.4, stagger: 0.05, onComplete: () => {
+        cards.forEach((card, i) => {
+          gsap.to(card, { rotation: (i - 2) * 14, x: (i - 2) * 38, y: Math.abs(i - 2) * 10, duration: 0.6, ease: "back.out(1.7)", delay: i * 0.05 });
+        });
+      }});
     }
 
-    // เลือกไพ่และดึงรูปจาก Google Drive API
-    async function pickCard(selectedCardElement) {
+    async function pickCard(cardEl) {
       if (isFlipping) return;
       isFlipping = true;
-
       document.getElementById('loading-text').classList.remove('hidden');
-
-      // Animate ไพ่ใบที่เลือกให้ลอยขึ้น
-      gsap.to(selectedCardElement, {
-        y: -50,
-        scale: 1.1,
-        duration: 0.3,
-        yoyo: true,
-        repeat: 1
-      });
-
+      gsap.to(cardEl, { y: -50, scale: 1.1, duration: 0.3, yoyo: true, repeat: 1 });
       try {
-        // ดึงภาพการ์ดแบบสุ่มจาก Folder Google Drive
         const res = await fetch(`${API_URL}?action=getRandomCard`);
         const data = await res.json();
-
         if (data.status === 'success' && data.imageUrl) {
           selectedCardUrl = data.imageUrl;
           document.getElementById('card-img-result').src = selectedCardUrl;
-
-          setTimeout(() => {
-            showRevealedCard();
-          }, 600);
+          setTimeout(() => showRevealedCard(), 600);
         } else {
-          alert("ไม่สามารถดึงภาพการ์ดได้ กรุณาลองใหม่อีกครั้ง");
+          alert("ไม่สามารถดึงภาพการ์ดได้");
           isFlipping = false;
         }
       } catch (e) {
@@ -275,96 +118,47 @@
       }
     }
 
-    // แสดงผลไพ่เปิดพลิก 3D
     function showRevealedCard() {
       document.getElementById('deck-container').classList.add('hidden');
       const revealedBox = document.getElementById('revealed-card-box');
       const card3D = document.getElementById('card-3d');
-      
       revealedBox.classList.remove('hidden');
       card3D.classList.remove('flipped');
-
-      // Animate การพลิกไพ่ 3D
       setTimeout(() => {
         card3D.classList.add('flipped');
-        
-        // ยิงเอฟเฟกต์ Confetti ประกายทอง
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.6 },
-          colors: ['#FFD700', '#FFA500', '#FFFFFF']
-        });
-
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500', '#FFFFFF'] });
         document.getElementById('sub-title').innerText = "✨ Cards Of The Day ของคุณเปิดออกแล้ว ✨";
         document.getElementById('btn-share').classList.remove('hidden');
         isFlipping = false;
       }, 300);
     }
 
-    // แชร์รูปภาพเข้าแชต LINE ผ่าน Share Target Picker
     async function shareCardResult() {
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-
+      if (!liff.isLoggedIn()) { liff.login(); return; }
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
           {
             "type": "flex",
             "altText": "🔮 Cards Of The Day ของฉันวันนี้",
             "contents": {
-              "type": "bubble",
-              "size": "mega",
-              "styles": {
-                "body": { "backgroundColor": "#0F172A" }
-              },
+              "type": "bubble", "size": "mega",
+              "styles": { "body": { "backgroundColor": "#0F172A" } },
               "body": {
-                "type": "box",
-                "layout": "vertical",
+                "type": "box", "layout": "vertical",
                 "contents": [
-                  {
-                    "type": "text",
-                    "text": "CARDS OF THE DAY",
-                    "weight": "bold",
-                    "color": "#D4AF37",
-                    "size": "xs",
-                    "align": "center"
-                  },
-                  {
-                    "type": "box",
-                    "layout": "vertical",
-                    "margin": "md",
-                    "cornerRadius": "12px",
-                    "contents": [
-                      {
-                        "type": "image",
-                        "url": selectedCardUrl,
-                        "size": "full",
-                        "aspectMode": "cover",
-                        "aspectRatio": "3:4"
-                      }
-                    ]
-                  }
+                  { "type": "text", "text": "CARDS OF THE DAY", "weight": "bold", "color": "#D4AF37", "size": "xs", "align": "center" },
+                  { "type": "box", "layout": "vertical", "margin": "md", "cornerRadius": "12px", "contents": [
+                    { "type": "image", "url": selectedCardUrl, "size": "full", "aspectMode": "cover", "aspectRatio": "3:4" }
+                  ]}
                 ]
               }
             }
           }
-        ]).then(() => {
-          liff.closeWindow();
-        }).catch(err => console.error(err));
-      } else {
-        alert("เบราว์เซอร์นี้ไม่รองรับการแชร์โดยตรง");
+        ]).then(() => liff.closeWindow()).catch(err => console.error(err));
       }
     }
 
-    // Initialize LIFF & Render Initial Deck
-    liff.init({ liffId: "2012072125-lqyIAzeR" }).then(() => {
-      renderDeck();
-    }).catch(() => {
-      renderDeck();
-    });
+    liff.init({ liffId: "2012072125-lqyIAzeR" }).then(() => renderDeck()).catch(() => renderDeck());
   </script>
 </body>
 </html>
