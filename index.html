@@ -38,6 +38,14 @@
       background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
       transform: translateY(-1px);
     }
+    .btn-success {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+      transform: translateY(-1px);
+    }
     .btn-danger {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       transition: all 0.2s ease;
@@ -60,7 +68,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-slate-800">NamoBot Admin Dashboard</h1>
-          <p class="text-xs text-slate-500">ระบบจัดการข้อความประกาศ และกฎระเบียบประจำกลุ่ม LINE</p>
+          <p class="text-xs text-slate-500">ระบบจัดการข้อความประกาศ และตั้งเวลาอัตโนมัติ</p>
         </div>
       </div>
       <div id="connection-badge" class="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full text-xs font-medium">
@@ -73,16 +81,19 @@
     <section class="glass-card rounded-2xl p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
         <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
-          <i class="fa-solid fa-plug-circle-check text-sky-600"></i>
-          <span>เชื่อมต่อ Google Apps Script Web App URL (ชีท url ช่อง A1)</span>
+          <i class="fa-solid fa-link text-sky-600"></i>
+          <span>ตั้งค่า Google Apps Script Web App URL (ดึงจากชีท url ช่อง A1)</span>
         </div>
-        <span class="text-[11px] text-slate-400">ดึงค่าอัตโนมัติ</span>
+        <span class="text-[11px] text-slate-400">เชื่อมต่อและบันทึก</span>
       </div>
       <div class="flex flex-col md:flex-row gap-3">
         <input type="text" id="app-url-input" placeholder="https://script.google.com/macros/s/.../exec" 
                class="glass-input flex-1 px-4 py-2.5 rounded-xl text-xs text-slate-700 font-mono">
-        <button onclick="connectAndFetchData()" class="btn-primary text-white font-medium text-xs px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
-          <i class="fa-solid fa-bolt"></i> เชื่อมต่อ
+        <button onclick="saveAppUrlToSheet()" class="btn-success text-white font-medium text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึก
+        </button>
+        <button onclick="connectAndFetchData()" class="btn-primary text-white font-medium text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-plug"></i> เชื่อมต่อ
         </button>
       </div>
     </section>
@@ -92,7 +103,7 @@
       <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
         <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
           <i class="fa-solid fa-clock text-indigo-600"></i>
-          <span>ตั้งเวลาส่งข้อความประกาศอัตโนมัติประจำวัน</span>
+          <span>ตั้งเวลาส่งข้อความประกาศอัตโนมัติ</span>
         </div>
         <span id="schedule-status-badge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">
           ยังไม่ได้ตั้งเวลา
@@ -101,32 +112,11 @@
 
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3 w-full sm:w-auto">
-          <label class="text-xs text-slate-600 font-medium whitespace-nowrap">เลือกเวลาส่งประจำวัน:</label>
-          <select id="schedule-hour-select" class="glass-input px-3 py-2 rounded-xl text-xs text-slate-700 font-semibold">
-            <option value="0">00:00 น.</option>
-            <option value="1">01:00 น.</option>
-            <option value="2">02:00 น.</option>
-            <option value="3">03:00 น.</option>
-            <option value="4">04:00 น.</option>
-            <option value="5" selected>05:00 น.</option>
-            <option value="6">06:00 น.</option>
-            <option value="7">07:00 น.</option>
-            <option value="8">08:00 น.</option>
-            <option value="9">09:00 น.</option>
-            <option value="10">10:00 น.</option>
-            <option value="11">11:00 น.</option>
-            <option value="12">12:00 น.</option>
-            <option value="13">13:00 น.</option>
-            <option value="14">14:00 น.</option>
-            <option value="15">15:00 น.</option>
-            <option value="16">16:00 น.</option>
-            <option value="17">17:00 น.</option>
-            <option value="18">18:00 น.</option>
-            <option value="19">19:00 น.</option>
-            <option value="20">20:00 น.</option>
-            <option value="21">21:00 น.</option>
-            <option value="22">22:00 น.</option>
-            <option value="23">23:00 น.</option>
+          <label class="text-xs text-slate-600 font-medium whitespace-nowrap">ความถี่ / เวลา:</label>
+          <select id="schedule-type-select" class="glass-input px-3 py-2 rounded-xl text-xs text-slate-700 font-semibold">
+            <option value="daily_05">ทุกวัน เวลา 05:00 น.</option>
+            <option value="every_30_mins">ทุก ๆ 30 นาที (โหมดทดสอบ)</option>
+            <option value="every_1_hour">ทุก ๆ 1 ชั่วโมง</option>
           </select>
         </div>
 
@@ -272,8 +262,7 @@
 
     async function loadAppUrlFromSheet() {
       try {
-        const url = `${API_URL}?action=getAppUrl`;
-        const res = await fetch(url);
+        const res = await fetch(`${API_URL}?action=getAppUrl`);
         const data = await res.json();
         if (data.status === "success" && data.url) {
           API_URL = data.url;
@@ -286,11 +275,30 @@
       }
     }
 
+    async function saveAppUrlToSheet() {
+      const inputUrl = document.getElementById('app-url-input').value.trim();
+      if (!inputUrl) return alert("กรุณากรอก URL ให้ถูกต้อง");
+      
+      showStatus("กำลังบันทึก URL ลงชีท url (A1)...", false, true);
+      try {
+        const res = await fetch(`${getApiUrl()}?action=updateAppUrl&url=${encodeURIComponent(inputUrl)}`);
+        const data = await res.json();
+        if (data.status === "success") {
+          API_URL = inputUrl;
+          showStatus("บันทึก URL ลงแผ่นงาน url (A1) สำเร็จเรียบร้อย");
+        } else {
+          showStatus("บันทึก URL ไม่สำเร็จ: " + data.message, true);
+        }
+      } catch (e) {
+        showStatus("เกิดข้อผิดพลาดในการบันทึก URL", true);
+      }
+    }
+
     async function connectAndFetchData() {
       const inputUrl = document.getElementById('app-url-input').value.trim();
       if (inputUrl) API_URL = inputUrl;
 
-      showStatus("กำลังเชื่อมต่อ และดึงข้อมูลจาก Apps Script...", false, true);
+      showStatus("กำลังเชื่อมต่อ และดึงข้อมูล...", false, true);
 
       try {
         await Promise.all([
@@ -300,34 +308,27 @@
           fetchScheduleStatus()
         ]);
         updateConnectionBadge(true);
-        showStatus("เชื่อมต่อ และโหลดข้อมูลสำเร็จเรียบร้อยแล้ว");
+        showStatus("เชื่อมต่อและโหลดข้อมูลสำเร็จเรียบร้อย");
       } catch (err) {
         updateConnectionBadge(false);
-        showStatus("เกิดข้อผิดพลาดในการเชื่อมต่อ Apps Script", true);
+        showStatus("เชื่อมต่อล้มเหลว ตรวจสอบ Web App URL อีกครั้ง", true);
       }
     }
 
     async function fetchAlertText() {
-      const url = `${getApiUrl()}?action=getAlert`;
-      const res = await fetch(url);
+      const res = await fetch(`${getApiUrl()}?action=getAlert`);
       const data = await res.json();
-      if (data.status === "success") {
-        document.getElementById('alert-textarea').value = data.text || "";
-      }
+      if (data.status === "success") document.getElementById('alert-textarea').value = data.text || "";
     }
 
     async function fetchRulesText() {
-      const url = `${getApiUrl()}?action=getRules`;
-      const res = await fetch(url);
+      const res = await fetch(`${getApiUrl()}?action=getRules`);
       const data = await res.json();
-      if (data.status === "success") {
-        document.getElementById('rules-textarea').value = data.text || "";
-      }
+      if (data.status === "success") document.getElementById('rules-textarea').value = data.text || "";
     }
 
     async function fetchMemberStats() {
-      const url = `${getApiUrl()}?action=getMembers`;
-      const res = await fetch(url);
+      const res = await fetch(`${getApiUrl()}?action=getMembers`);
       const data = await res.json();
       if (data.status === "success") {
         document.getElementById('stat-group-count').innerText = `${data.groupCount || 0} กลุ่ม`;
@@ -337,29 +338,26 @@
 
     async function fetchScheduleStatus() {
       try {
-        const url = `${getApiUrl()}?action=getSchedule`;
-        const res = await fetch(url);
+        const res = await fetch(`${getApiUrl()}?action=getSchedule`);
         const data = await res.json();
         const badge = document.getElementById('schedule-status-badge');
         
         if (data.status === "success" && data.active) {
-          const hourFormatted = String(data.hour).padStart(2, '0');
           badge.className = "text-xs bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-medium";
-          badge.innerText = `เปิดส่งอัตโนมัติ (${hourFormatted}:00 น.)`;
-          document.getElementById('schedule-hour-select').value = data.hour;
+          badge.innerText = `เปิดใช้งาน (${data.mode})`;
+          document.getElementById('schedule-type-select').value = data.modeKey;
         } else {
           badge.className = "text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium";
-          badge.innerText = "ยังไม่ได้ตั้งเวลาส่ง";
+          badge.innerText = "ยังไม่ได้ตั้งเวลา";
         }
       } catch (e) {}
     }
 
     async function setSchedule() {
-      const selectedHour = document.getElementById('schedule-hour-select').value;
-      showStatus("กำลังตั้งเวลาส่งอัตโนมัติ...", false, true);
+      const mode = document.getElementById('schedule-type-select').value;
+      showStatus("กำลังตั้งค่าระบบเวลาอัตโนมัติ...", false, true);
       try {
-        const url = `${getApiUrl()}?action=setSchedule&hour=${selectedHour}`;
-        const res = await fetch(url);
+        const res = await fetch(`${getApiUrl()}?action=setSchedule&mode=${mode}`);
         const data = await res.json();
         if (data.status === "success") {
           showStatus(data.message);
@@ -373,20 +371,19 @@
     }
 
     async function cancelSchedule() {
-      if (!confirm("คุณต้องการยกเลิกการส่งข้อความประกาศอัตโนมัติ ใช่หรือไม่?")) return;
+      if (!confirm("คุณต้องการยกเลิกการส่งอัตโนมัติใช่หรือไม่?")) return;
       showStatus("กำลังยกเลิกการตั้งเวลา...", false, true);
       try {
-        const url = `${getApiUrl()}?action=cancelSchedule`;
-        const res = await fetch(url);
+        const res = await fetch(`${getApiUrl()}?action=cancelSchedule`);
         const data = await res.json();
         if (data.status === "success") {
           showStatus(data.message);
           fetchScheduleStatus();
         } else {
-          showStatus("ยกเลิกไม่สำเร็จ: " + data.message, true);
+          showStatus("ยกเลิกไม่สำเร็จ", true);
         }
       } catch (e) {
-        showStatus("เกิดข้อผิดพลาดในการยกเลิก", true);
+        showStatus("เกิดข้อผิดพลาด", true);
       }
     }
 
@@ -394,16 +391,12 @@
       const text = document.getElementById('alert-textarea').value;
       showStatus("กำลังบันทึกข้อความประกาศ...", false, true);
       try {
-        const url = `${getApiUrl()}?action=updateAlert&text=${encodeURIComponent(text)}`;
-        const res = await fetch(url);
+        const res = await fetch(`${getApiUrl()}?action=updateAlert&text=${encodeURIComponent(text)}`);
         const data = await res.json();
-        if (data.status === "success") {
-          showStatus("บันทึกข้อความประกาศลงชีท alert สำเร็จ");
-        } else {
-          showStatus("บันทึกไม่สำเร็จ: " + data.message, true);
-        }
+        if (data.status === "success") showStatus("บันทึกข้อความประกาศสำเร็จ");
+        else showStatus("บันทึกไม่สำเร็จ", true);
       } catch (e) {
-        showStatus("เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว", true);
+        showStatus("เชื่อมต่อล้มเหลว", true);
       }
     }
 
@@ -411,16 +404,12 @@
       const text = document.getElementById('rules-textarea').value;
       showStatus("กำลังบันทึกกฎข้อบังคับ...", false, true);
       try {
-        const url = `${getApiUrl()}?action=updateRules&text=${encodeURIComponent(text)}`;
-        const res = await fetch(url);
+        const res = await fetch(`${getApiUrl()}?action=updateRules&text=${encodeURIComponent(text)}`);
         const data = await res.json();
-        if (data.status === "success") {
-          showStatus("บันทึกข้อปฏิบัติลงชีท law สำเร็จ");
-        } else {
-          showStatus("บันทึกไม่สำเร็จ: " + data.message, true);
-        }
+        if (data.status === "success") showStatus("บันทึกกฎข้อบังคับสำเร็จ");
+        else showStatus("บันทึกไม่สำเร็จ", true);
       } catch (e) {
-        showStatus("เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว", true);
+        showStatus("เชื่อมต่อล้มเหลว", true);
       }
     }
 
