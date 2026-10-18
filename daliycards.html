@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cards of the Day - Royal Purple Luxury</title>
+  <title>Cards of the Day - Luxury Sapphire</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- Canvas Confetti & GSAP animation libraries -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   
@@ -16,8 +15,8 @@
 
     body {
       font-family: 'Prompt', sans-serif;
-      /* โทนสีม่วงสว่างแบบ Luxury (Royal Deep Violet to Bright Lavender Radial Gradient) */
-      background: radial-gradient(circle at center, #2e1065 0%, #17072b 60%, #0d031b 100%);
+      /* โทนสีฟ้า Luxury (Deep Sapphire Blue to Luminous Sky Radial Gradient) */
+      background: radial-gradient(circle at center, #0f172a 0%, #080c19 65%, #02040a 100%);
       color: #F3F4F6;
       touch-action: manipulation;
     }
@@ -26,24 +25,22 @@
       font-family: 'Cinzel', serif;
     }
 
-    /* Gold & Lavender Glow Texts & Borders */
+    /* Gold & Luminous Sky Blue Glow */
     .gold-gradient-text {
       background: linear-gradient(135deg, #FFF7AD 0%, #F59E0B 50%, #D97706 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .purple-gold-border {
-      border: 1px solid rgba(216, 180, 254, 0.4);
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25), inset 0 0 10px rgba(236, 72, 153, 0.15);
+    .blue-gold-border {
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 22px rgba(14, 165, 233, 0.2), inset 0 0 12px rgba(251, 191, 36, 0.1);
     }
 
-    /* Perspective Container for 3D Cards */
     .perspective-container {
       perspective: 1200px;
     }
 
-    /* 3D Card Flip Animation */
     .card-3d-wrap {
       transform-style: preserve-3d;
       transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -78,7 +75,7 @@
       background: linear-gradient(
         60deg,
         transparent 30%,
-        rgba(233, 213, 255, 0.35) 50%,
+        rgba(56, 189, 248, 0.25) 50%,
         transparent 70%
       );
       transform: rotate(30deg);
@@ -90,7 +87,7 @@
       100% { transform: translate(100%, 100%) rotate(30deg); }
     }
 
-    /* Card Fan & Spread positioning (ขยายขนาดขึ้น 10% : 143px x 220px) */
+    /* สำรับไพ่ขนาดขยาย 10% : 143px x 220px */
     .deck-card {
       position: absolute;
       width: 143px;
@@ -106,31 +103,43 @@
   <!-- Header Section -->
   <header class="text-center pt-4 space-y-1">
     <p class="font-cinzel text-xs tracking-[0.3em] gold-gradient-text uppercase font-bold">Sacred Guidance</p>
-    <h1 class="text-2xl font-bold text-fuchsia-100/90 tracking-wide font-cinzel drop-shadow-[0_0_12px_rgba(192,132,252,0.6)]">Cards Of The Day</h1>
-    <p id="sub-title" class="text-xs text-purple-200/80 font-light">ตั้งจิตอธิษฐานแล้วเลือกไพ่ประจำวันของคุณ 1 ใบ</p>
+    <h1 class="text-2xl font-bold text-sky-100/90 tracking-wide font-cinzel drop-shadow-[0_0_12px_rgba(56,189,248,0.5)]">Cards Of The Day</h1>
+    <p id="sub-title" class="text-xs text-sky-200/80 font-light">ตั้งจิตอธิษฐานแล้วเลือกไพ่ประจำวันของคุณ 1 ใบ</p>
   </header>
 
   <!-- Main Interactive Area -->
   <main class="flex-1 flex flex-col items-center justify-center my-6 relative w-full max-w-md mx-auto perspective-container">
     
-    <!-- 1. Card Deck Container (สำรับไพ่ขนาดขยาย 10%) -->
-    <div id="deck-container" class="relative w-full h-[280px] flex items-center justify-center">
-      <!-- Cards rendered dynamically via JS -->
+    <!-- Connection Error Notice Box (ระบบดักจับข้อผิดพลาดการเชื่อมต่อ) -->
+    <div id="error-box" class="hidden absolute z-30 bg-slate-900/95 border border-red-500/50 p-6 rounded-2xl text-center space-y-3 shadow-2xl backdrop-blur-md w-11/12 max-w-xs">
+      <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto text-red-400 text-xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="font-bold text-sm text-red-200">การเชื่อมต่อขัดข้อง</h3>
+      <p id="error-message" class="text-[11px] text-slate-300 leading-relaxed">ไม่สามารถติดต่อเซิร์ฟเวอร์ Google Apps Script ได้ กรุณาตรวจสอบลิงก์ API หรือสิทธิ์การเข้าถึง</p>
+      <button onclick="retryConnection()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs py-2.5 rounded-xl transition shadow">
+        <i class="fa-solid fa-rotate-right mr-1"></i> ลองใหม่อีกครั้ง
+      </button>
     </div>
 
-    <!-- 2. Selected Revealed Card (ใบที่เลือกเปิด ขยายขนาดขึ้น 10% : 242px x 374px) -->
+    <!-- 1. Card Deck Container -->
+    <div id="deck-container" class="relative w-full h-[280px] flex items-center justify-center">
+      <!-- Cards rendered dynamically -->
+    </div>
+
+    <!-- 2. Selected Revealed Card (ขนาด 242px x 374px) -->
     <div id="revealed-card-box" class="hidden w-[242px] h-[374px] relative perspective-container">
-      <div id="card-3d" class="card-3d-wrap w-full h-full relative shadow-[0_0_40px_rgba(168,85,247,0.4)] rounded-2xl">
+      <div id="card-3d" class="card-3d-wrap w-full h-full relative shadow-[0_0_40px_rgba(14,165,233,0.35)] rounded-2xl">
         
-        <!-- Card Front (ด้านหลังไพ่ โทนม่วงสว่าง) -->
-        <div class="card-front absolute inset-0 w-full h-full purple-gold-border bg-gradient-to-br from-purple-900 via-fuchsia-950 to-indigo-950 p-2.5 flex flex-col items-center justify-center shimmer">
-          <div class="w-full h-full border border-purple-400/40 rounded-xl flex items-center justify-center bg-purple-950/40 backdrop-blur-sm">
+        <!-- Card Front -->
+        <div class="card-front absolute inset-0 w-full h-full blue-gold-border bg-gradient-to-br from-slate-900 via-sky-950 to-indigo-950 p-2.5 flex flex-col items-center justify-center shimmer">
+          <div class="w-full h-full border border-sky-400/30 rounded-xl flex items-center justify-center bg-sky-950/40 backdrop-blur-sm">
             <i class="fa-solid fa-sparkles text-4xl gold-gradient-text animate-pulse"></i>
           </div>
         </div>
 
-        <!-- Card Back (หน้าไพ่จริงที่สุ่มได้) -->
-        <div class="card-back absolute inset-0 w-full h-full purple-gold-border rounded-2xl overflow-hidden bg-slate-900 shadow-[0_0_35px_rgba(216,180,254,0.5)]">
+        <!-- Card Back -->
+        <div class="card-back absolute inset-0 w-full h-full blue-gold-border rounded-2xl overflow-hidden bg-slate-900 shadow-[0_0_35px_rgba(56,189,248,0.4)]">
           <img id="card-img-result" src="" alt="Card of the day" class="w-full h-full object-cover">
         </div>
 
@@ -138,8 +147,8 @@
     </div>
 
     <!-- Loading Glow Text -->
-    <div id="loading-text" class="hidden mt-6 text-purple-200/90 text-xs flex items-center gap-2 drop-shadow">
-      <i class="fa-solid fa-wand-magic-sparkles animate-spin text-fuchsia-400"></i>
+    <div id="loading-text" class="hidden mt-6 text-sky-200/90 text-xs flex items-center gap-2 drop-shadow">
+      <i class="fa-solid fa-wand-magic-sparkles animate-spin text-sky-400"></i>
       <span>กำลังสื่อจิตเชื่อมต่อการ์ด...</span>
     </div>
 
@@ -149,82 +158,64 @@
   <footer class="w-full max-w-md mx-auto space-y-3 pb-4">
     
     <!-- Shuffle Button -->
-    <button id="btn-shuffle" onclick="shuffleAndSpread()" class="w-full purple-gold-border bg-gradient-to-r from-purple-900/60 via-fuchsia-900/80 to-purple-900/60 hover:from-fuchsia-800 hover:to-purple-800 text-purple-100 font-medium text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
-      <i class="fa-solid fa-arrows-rotate text-fuchsia-300"></i> สับไพ่ใหม่
+    <button id="btn-shuffle" onclick="shuffleAndSpread()" class="w-full blue-gold-border bg-gradient-to-r from-sky-950/70 via-slate-900 to-sky-950/70 hover:from-sky-900 hover:to-slate-800 text-sky-100 font-medium text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
+      <i class="fa-solid fa-arrows-rotate text-sky-400"></i> สับไพ่ใหม่
     </button>
 
-    <!-- Share Button (เมื่อเปิดไพ่แล้ว) -->
-    <button id="btn-share" onclick="shareCardResult()" class="hidden w-full bg-gradient-to-r from-amber-400 via-fuchsia-500 to-amber-500 hover:from-amber-300 hover:to-fuchsia-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-xl">
+    <!-- Share Button -->
+    <button id="btn-share" onclick="shareCardResult()" class="hidden w-full bg-gradient-to-r from-amber-400 via-sky-500 to-amber-500 hover:from-amber-300 hover:to-sky-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-xl">
       <i class="fa-solid fa-share-nodes"></i> แชร์คำทำนายลงในแชต
     </button>
 
   </footer>
 
   <script>
-    // URL Web App ล่าสุดของคุณ
+    // URL Web App ของคุณ
     const API_URL = "https://script.google.com/macros/s/AKfycbyBz-Fp81B6MBcA0rcr4ZEH-E6Q3kzfvfMamlVnzQsw6YiHXyzmry1uQTJ00v3bhhQWlA/exec";
     let selectedCardUrl = "";
     let isFlipping = false;
 
-    // สร้างสำรับไพ่ลอย 5 ใบสำหรับเลือก (ปรับระยะขยายพัดตามขนาดที่ใหญ่ขึ้น 10%)
     function renderDeck() {
       const container = document.getElementById('deck-container');
       container.innerHTML = '';
       
-      const totalCards = 5;
-      for (let i = 0; i < totalCards; i++) {
+      for (let i = 0; i < 5; i++) {
         const card = document.createElement('div');
-        card.className = `deck-card purple-gold-border bg-gradient-to-br from-purple-900 via-fuchsia-950 to-indigo-950 p-2 rounded-xl shadow-2xl shimmer`;
+        card.className = `deck-card blue-gold-border bg-gradient-to-br from-slate-900 via-sky-950 to-indigo-950 p-2 rounded-xl shadow-2xl shimmer`;
         card.innerHTML = `
-          <div class="w-full h-full border border-purple-300/30 rounded-lg flex items-center justify-center bg-purple-950/30">
-            <i class="fa-solid fa-star text-purple-300/50 text-sm"></i>
+          <div class="w-full h-full border border-sky-300/30 rounded-lg flex items-center justify-center bg-sky-950/30">
+            <i class="fa-solid fa-star text-sky-300/50 text-sm"></i>
           </div>
         `;
         
-        // คำนวณคลี่ไพ่เป็นพัด 3D ปรับระยะสมดุล
         const angle = (i - 2) * 13; 
         const translateX = (i - 2) * 40; 
         const translateY = Math.abs(i - 2) * 9;
 
-        gsap.set(card, {
-          rotation: angle,
-          x: translateX,
-          y: translateY,
-          zIndex: i
-        });
-
+        gsap.set(card, { rotation: angle, x: translateX, y: translateY, zIndex: i });
         card.addEventListener('click', () => pickCard(card));
         container.appendChild(card);
       }
     }
 
-    // แอนิเมชันสับไพ่
     function shuffleAndSpread() {
       if (isFlipping) return;
       
+      document.getElementById('error-box').classList.add('hidden');
       document.getElementById('revealed-card-box').classList.add('hidden');
       document.getElementById('deck-container').classList.remove('hidden');
       document.getElementById('btn-share').classList.add('hidden');
       document.getElementById('sub-title').innerText = "ตั้งจิตอธิษฐานแล้วเลือกไพ่ประจำวันของคุณ 1 ใบ";
 
       const cards = document.querySelectorAll('.deck-card');
-      
       gsap.to(cards, {
-        x: 0,
-        y: 0,
-        rotation: 0,
-        duration: 0.4,
-        stagger: 0.05,
+        x: 0, y: 0, rotation: 0, duration: 0.4, stagger: 0.05,
         onComplete: () => {
           cards.forEach((card, i) => {
-            const angle = (i - 2) * 14;
-            const translateX = (i - 2) * 42;
-            const translateY = Math.abs(i - 2) * 10;
-
             gsap.to(card, {
-              rotation: angle,
-              x: translateX,
-              y: translateY,
+              rotation: (i - 2) * 14,
+              x: (i - 2) * 42,
+              y: Math.abs(i - 2) * 10,
               duration: 0.6,
               ease: "back.out(1.7)",
               delay: i * 0.05
@@ -234,45 +225,54 @@
       });
     }
 
-    // เลือกไพ่และดึงรูปจาก Google Drive API
     async function pickCard(selectedCardElement) {
       if (isFlipping) return;
       isFlipping = true;
 
       document.getElementById('loading-text').classList.remove('hidden');
+      document.getElementById('error-box').classList.add('hidden');
 
       gsap.to(selectedCardElement, {
-        y: -55,
-        scale: 1.12,
-        duration: 0.3,
-        yoyo: true,
-        repeat: 1
+        y: -55, scale: 1.12, duration: 0.3, yoyo: true, repeat: 1
       });
 
       try {
-        const res = await fetch(`${API_URL}?action=getRandomCard`);
-        const data = await res.json();
+        const response = await fetch(`${API_URL}?action=getRandomCard`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const data = await response.json();
 
         if (data.status === 'success' && data.imageUrl) {
           selectedCardUrl = data.imageUrl;
           document.getElementById('card-img-result').src = selectedCardUrl;
-
-          setTimeout(() => {
-            showRevealedCard();
-          }, 600);
+          setTimeout(() => showRevealedCard(), 600);
         } else {
-          alert("ไม่สามารถดึงภาพการ์ดได้ กรุณาลองใหม่อีกครั้ง");
+          // ดักจับเคส API ตอบกลับแต่มีข้อผิดพลาด
+          showErrorNotice(data.message || "ไม่สามารถดึงรูปภาพการ์ดจาก Google Drive ได้");
           isFlipping = false;
         }
-      } catch (e) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      } catch (err) {
+        // ดักจับเคสเครือข่ายล่ม / CORS / URL ผิดพลาด
+        showErrorNotice("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กรุณาตรวจสอบลิงก์ Web App และสิทธิ์การใช้งาน (Anyone)");
         isFlipping = false;
       } finally {
         document.getElementById('loading-text').classList.add('hidden');
       }
     }
 
-    // แสดงผลไพ่เปิดพลิก 3D
+    function showErrorNotice(msg) {
+      document.getElementById('error-message').innerText = msg;
+      document.getElementById('error-box').classList.remove('hidden');
+    }
+
+    function retryConnection() {
+      document.getElementById('error-box').classList.add('hidden');
+      shuffleAndSpread();
+    }
+
     function showRevealedCard() {
       document.getElementById('deck-container').classList.add('hidden');
       const revealedBox = document.getElementById('revealed-card-box');
@@ -284,12 +284,11 @@
       setTimeout(() => {
         card3D.classList.add('flipped');
         
-        // ยิงเอฟเฟกต์ Confetti ประกายทองและม่วงสว่าง
         confetti({
           particleCount: 65,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#FFD700', '#E9D5FF', '#C084FC', '#FFFFFF']
+          colors: ['#FFD700', '#38BDF8', '#0284C7', '#FFFFFF']
         });
 
         document.getElementById('sub-title').innerText = "✨ Cards Of The Day ของคุณเปิดออกแล้ว ✨";
@@ -298,7 +297,6 @@
       }, 300);
     }
 
-    // แชร์รูปภาพเข้าแชต LINE
     async function shareCardResult() {
       if (!liff.isLoggedIn()) {
         liff.login();
@@ -314,7 +312,7 @@
               "type": "bubble",
               "size": "mega",
               "styles": {
-                "body": { "backgroundColor": "#1E0B36" }
+                "body": { "backgroundColor": "#080C19" }
               },
               "body": {
                 "type": "box",
@@ -324,7 +322,7 @@
                     "type": "text",
                     "text": "CARDS OF THE DAY",
                     "weight": "bold",
-                    "color": "#E9D5FF",
+                    "color": "#38BDF8",
                     "size": "xs",
                     "align": "center"
                   },
