@@ -3,231 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Namobot Admin Control Panel</title>
+  <title>NamoBot Admin Dashboard - Modern Light Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
+      color: #1e293b;
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+    }
+    .glass-input {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      outline: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-1px);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+      transform: translateY(-1px);
+    }
+  </style>
 </head>
-<body class="bg-slate-900 min-h-screen text-slate-100 flex flex-col justify-between p-4 md:p-6">
+<body class="p-4 md:p-8">
 
-  <div class="max-w-xl mx-auto w-full space-y-6">
-    
-    <!-- Header -->
-    <header class="flex items-center justify-between border-b border-slate-800 pb-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/30">
-          <i class="fa-solid fa-shield-halved text-white text-lg"></i>
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Top Header Bar -->
+    <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-sky-100 border border-sky-200 rounded-xl flex items-center justify-center text-sky-600 text-2xl shadow-sm">
+          <i class="fa-solid fa-robot"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-wide text-sky-100">Namobot Control</h1>
-          <p class="text-xs text-slate-400">Admin Dashboard (PC & Web)</p>
+          <h1 class="text-xl font-bold text-slate-800">NamoBot Admin Dashboard</h1>
+          <p class="text-xs text-slate-500">ระบบจัดการข้อความบรอดแคสต์ และกฎระเบียบประจำกลุ่ม LINE</p>
         </div>
       </div>
-      <span class="px-3 py-1 bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold rounded-full">Secure Admin</span>
+      <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+        <span>ระบบพร้อมใช้งาน</span>
+      </div>
     </header>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4 shadow-lg">
-        <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400 text-xl">
-          <i class="fa-solid fa-user-group"></i>
+    <!-- Web App URL Setting Card -->
+    <section class="glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+          <i class="fa-solid fa-link text-sky-600"></i>
+          <span>การเชื่อมต่อ Google Apps Script Web App URL</span>
         </div>
-        <div>
-          <p class="text-xs text-slate-400 font-medium">กลุ่มทั้งหมด</p>
-          <h3 id="stat-groups" class="text-2xl font-bold text-white">0</h3>
-        </div>
+        <span class="text-[11px] text-slate-400">ดึงค่าอัตโนมัติจากชีท url (A1)</span>
       </div>
+      <div class="flex flex-col md:flex-row gap-3">
+        <input type="text" id="app-url-input" placeholder="https://script.google.com/macros/s/.../exec" 
+               class="glass-input flex-1 px-4 py-2.5 rounded-xl text-xs text-slate-700 font-mono">
+        <button onclick="saveAppUrl()" class="btn-primary text-white font-medium text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึก URL
+        </button>
+      </div>
+    </section>
 
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4 shadow-lg">
-        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xl">
+    <!-- Stat Dashboard Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-500 font-medium">กลุ่ม LINE ในระบบ</p>
+          <h3 id="stat-group-count" class="text-2xl font-bold text-sky-600 mt-1">-</h3>
+        </div>
+        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl">
           <i class="fa-solid fa-users"></i>
         </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
         <div>
-          <p class="text-xs text-slate-400 font-medium">สมาชิกทั้งหมด</p>
-          <h3 id="stat-users" class="text-2xl font-bold text-white">0</h3>
+          <p class="text-xs text-slate-500 font-medium">ผู้ใช้งานรายบุคคล</p>
+          <h3 id="stat-user-count" class="text-2xl font-bold text-indigo-600 mt-1">-</h3>
+        </div>
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-user-check"></i>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Web App URL Config Box -->
-    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-5 space-y-3 shadow-lg">
-      <label class="text-xs font-semibold text-slate-300 flex items-center gap-2">
-        <i class="fa-solid fa-link text-sky-400"></i> Google Apps Script Web App URL
-      </label>
-      <div class="flex gap-2">
-        <input type="text" id="input-webapp-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition">
-        <button onclick="saveWebAppUrl()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition active:scale-95 shadow">
-          บันทึก
-        </button>
-      </div>
-    </div>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <!-- Content Management -->
-    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-5 space-y-5 shadow-lg">
-      <h2 class="text-sm font-bold text-sky-200 flex items-center gap-2 border-b border-slate-700/60 pb-3">
-        <i class="fa-solid fa-pen-to-square text-sky-400"></i> จัดการข้อความประกาศ & ต้อนรับ
-      </h2>
+      <!-- Alert Box Management -->
+      <section class="glass-card rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+              <i class="fa-solid fa-bullhorn text-amber-500"></i>
+              <span>ข้อความต้อนรับ / ประกาศประจำวัน (Sheet: alert)</span>
+            </div>
+            <button onclick="fetchAlertText()" class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+          </div>
+          <textarea id="alert-textarea" rows="5" placeholder="กรอกข้อความประกาศหรือข้อความต้อนรับ..."
+                    class="glass-input w-full p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed resize-none"></textarea>
+        </div>
 
-      <!-- Alert Message Box -->
-      <div class="space-y-2">
-        <label class="text-xs text-slate-300 font-medium">1. ข้อความต้อนรับเข้ากลุ่ม (Sheet: alert -> A1)</label>
-        <textarea id="input-alert" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition leading-relaxed"></textarea>
-        
-        <div class="flex gap-2 pt-1">
-          <button onclick="updateAlert()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-100 py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-floppy-disk text-sky-400"></i> บันทึกข้อความต้อนรับ
+        <div class="space-y-2 pt-2">
+          <button onclick="saveAlertText()" class="w-full btn-primary text-white font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-save"></i> บันทึกข้อความประกาศ
           </button>
-          
-          <button onclick="triggerBroadcast()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
-            <i class="fa-solid fa-paper-plane"></i> ส่งต้อนรับเข้าทุกกลุ่ม
+          <button onclick="triggerBroadcast()" class="w-full btn-success text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md">
+            <i class="fa-solid fa-paper-plane"></i> ส่งต้อนรับเข้าทุกกลุ่ม LINE
           </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Law / Rules Message Box -->
-      <div class="space-y-2 pt-3 border-t border-slate-700/60">
-        <label class="text-xs text-slate-300 font-medium">2. ข้อความกฎระเบียบกลุ่ม (Sheet: law -> A1)</label>
-        <textarea id="input-rules" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition leading-relaxed"></textarea>
-        
-        <button onclick="updateRules()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-100 py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-floppy-disk text-sky-400"></i> บันทึกกฎกลุ่มลง Sheet law
-        </button>
-      </div>
+      <!-- Rules Box Management -->
+      <section class="glass-card rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+              <i class="fa-solid fa-scale-balanced text-indigo-600"></i>
+              <span>ข้อปฏิบัติประจำกลุ่ม (Sheet: law)</span>
+            </div>
+            <button onclick="fetchRulesText()" class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+          </div>
+          <textarea id="rules-textarea" rows="5" placeholder="กรอกข้อปฏิบัติประจำกลุ่ม..."
+                    class="glass-input w-full p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed resize-none"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="saveRulesText()" class="w-full btn-primary text-white font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-save"></i> บันทึกกฎข้อบังคับ
+          </button>
+        </div>
+      </section>
+
     </div>
 
-    <!-- Navigation / Preview Links -->
-    <div class="grid grid-cols-2 gap-3 pb-6">
-      <a href="law.html" target="_blank" class="bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 py-3 px-4 rounded-xl text-xs font-medium text-center transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-book-open text-sky-400"></i> เปิดดู กฏกลุ่ม
-      </a>
-      <a href="daliycards.html" target="_blank" class="bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 py-3 px-4 rounded-xl text-xs font-medium text-center transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> เปิดดู Cards Of the Day
+    <!-- Status Log Modal / Banner -->
+    <div id="status-banner" class="hidden glass-card rounded-2xl p-4 border-l-4 border-sky-500 flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2 text-slate-700">
+        <i id="status-icon" class="fa-solid fa-spinner animate-spin text-sky-600"></i>
+        <span id="status-message">กำลังดำเนินการ...</span>
+      </div>
+      <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
   </div>
 
   <script>
-    // ดึงค่า Web App URL จาก LocalStorage หรือใช้ค่าดีฟอลต์
-    let API_URL = localStorage.getItem("namo_webapp_url") || "https://script.google.com/macros/s/AKfycbyBz-Fp81B6MBcA0rcr4ZEH-E6Q3kzfvfMamlVnzQsw6YiHXyzmry1uQTJ00v3bhhQWlA/exec";
-    document.getElementById('input-webapp-url').value = API_URL;
+    // URL หลักเริ่มต้น
+    let API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
 
-    function saveWebAppUrl() {
-      const val = document.getElementById('input-webapp-url').value.trim();
-      if (!val) { alert("กรุณากรอก URL ให้ถูกต้อง"); return; }
-      API_URL = val;
-      localStorage.setItem("namo_webapp_url", API_URL);
-      alert("บันทึก Web App URL เรียบร้อยแล้ว");
-      loadDashboardData();
-    }
+    function showStatus(msg, isError = false, isLoading = false) {
+      const banner = document.getElementById('status-banner');
+      const icon = document.getElementById('status-icon');
+      const message = document.getElementById('status-message');
 
-    // โหลดข้อมูลสถิติและข้อความจาก Google Sheets ผ่าน API
-    async function loadDashboardData() {
-      try {
-        // ดึงจำนวนสมาชิก/กลุ่ม
-        const resMem = await fetch(`${API_URL}?action=getMembers`);
-        const dataMem = await resMem.json();
-        if (dataMem.status === "success") {
-          document.getElementById('stat-groups').innerText = dataMem.groupCount || 0;
-          document.getElementById('stat-users').innerText = dataMem.userCount || 0;
-        }
+      banner.classList.remove('hidden');
+      message.innerText = msg;
 
-        // ดึงข้อความต้อนรับ (alert)
-        const resAlert = await fetch(`${API_URL}?action=getAlert`);
-        const dataAlert = await resAlert.json();
-        if (dataAlert.status === "success") {
-          document.getElementById('input-alert').value = dataAlert.text || "";
-        }
-
-        // ดึงกฎระเบียบ (law)
-        const resRules = await fetch(`${API_URL}?action=getRules`);
-        const dataRules = await resRules.json();
-        if (dataRules.status === "success") {
-          document.getElementById('input-rules').value = dataRules.text || "";
-        }
-      } catch (e) {
-        console.error("Load data error: ", e);
+      if (isLoading) {
+        icon.className = "fa-solid fa-spinner animate-spin text-sky-600";
+        banner.className = "glass-card rounded-2xl p-4 border-l-4 border-sky-500 flex items-center justify-between text-xs";
+      } else if (isError) {
+        icon.className = "fa-solid fa-triangle-exclamation text-red-500";
+        banner.className = "glass-card rounded-2xl p-4 border-l-4 border-red-500 flex items-center justify-between text-xs";
+      } else {
+        icon.className = "fa-solid fa-circle-check text-emerald-500";
+        banner.className = "glass-card rounded-2xl p-4 border-l-4 border-emerald-500 flex items-center justify-between text-xs";
       }
     }
 
-    // อัปเดตข้อความต้อนรับ
-    async function updateAlert() {
-      const text = document.getElementById('input-alert').value;
+    function getApiUrl() {
+      const input = document.getElementById('app-url-input').value.trim();
+      return input || API_URL;
+    }
+
+    async function loadInitialData() {
+      document.getElementById('app-url-input').value = API_URL;
+      showStatus("กำลังดึงข้อมูลระบบ...", false, true);
+
       try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "updateAlert", text: text })
-        });
+        await Promise.all([
+          fetchAlertText(),
+          fetchRulesText(),
+          fetchMemberStats()
+        ]);
+        showStatus("โหลดข้อมูลระบบสำเร็จเรียบร้อย");
+      } catch (err) {
+        showStatus("เกิดข้อผิดพลาดในการดึงข้อมูลจาก Apps Script", true);
+      }
+    }
+
+    async function fetchAlertText() {
+      const url = `${getApiUrl()}?action=getAlert`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === "success") {
+        document.getElementById('alert-textarea').value = data.text || "";
+      }
+    }
+
+    async function fetchRulesText() {
+      const url = `${getApiUrl()}?action=getRules`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === "success") {
+        document.getElementById('rules-textarea').value = data.text || "";
+      }
+    }
+
+    async function fetchMemberStats() {
+      const url = `${getApiUrl()}?action=getMembers`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === "success") {
+        document.getElementById('stat-group-count').innerText = `${data.groupCount || 0} กลุ่ม`;
+        document.getElementById('stat-user-count').innerText = `${data.userCount || 0} คน`;
+      }
+    }
+
+    async function saveAlertText() {
+      const text = document.getElementById('alert-textarea').value;
+      showStatus("กำลังบันทึกข้อความประกาศ...", false, true);
+      try {
+        const url = `${getApiUrl()}?action=updateAlert&text=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
         const data = await res.json();
         if (data.status === "success") {
-          alert("บันทึกข้อความต้อนรับสำเร็จ!");
+          showStatus("บันทึกข้อความประกาศลงชีท alert สำเร็จ");
         } else {
-          alert("เกิดข้อผิดพลาด: " + data.message);
+          showStatus("บันทึกไม่สำเร็จ: " + data.message, true);
         }
       } catch (e) {
-        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+        showStatus("เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว", true);
       }
     }
 
-    // อัปเดตกฎระเบียบกลุ่ม
-    async function updateRules() {
-      const text = document.getElementById('input-rules').value;
+    async function saveRulesText() {
+      const text = document.getElementById('rules-textarea').value;
+      showStatus("กำลังบันทึกกฎข้อบังคับ...", false, true);
       try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "updateRules", text: text })
-        });
+        const url = `${getApiUrl()}?action=updateRules&text=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
         const data = await res.json();
         if (data.status === "success") {
-          alert("บันทึกกฎระเบียบกลุ่มลง Sheet law สำเร็จ!");
+          showStatus("บันทึกข้อปฏิบัติลงชีท law สำเร็จ");
         } else {
-          alert("เกิดข้อผิดพลาด: " + data.message);
+          showStatus("บันทึกไม่สำเร็จ: " + data.message, true);
         }
       } catch (e) {
-        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+        showStatus("เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว", true);
       }
     }
 
-    // กดปุ่มส่งต้อนรับเข้าทุกกลุ่ม (Broadcast)
+    async function saveAppUrl() {
+      const newUrl = document.getElementById('app-url-input').value.trim();
+      if (!newUrl) return alert("กรุณากรอก URL ให้ถูกต้อง");
+      API_URL = newUrl;
+      showStatus("อัปเดต URL การเชื่อมต่อเรียบร้อย");
+      loadInitialData();
+    }
+
     async function triggerBroadcast() {
-      if (!confirm("คุณต้องการส่งข้อความต้อนรับพร้อมปุ่มลอย Quick Reply เข้าทุกกลุ่ม LINE ทันทีใช่หรือไม่?")) {
-        return;
-      }
-
-      // แสดงสถานะกำลังส่ง
-      const btn = event.currentTarget;
-      const originalHTML = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> กำลังส่ง...`;
-      btn.disabled = true;
+      if (!confirm("คุณต้องการส่งข้อความประกาศนี้ไปยังทุกกลุ่ม LINE ใช่หรือไม่?")) return;
+      showStatus("กำลังส่งข้อความเข้าทุกกลุ่ม LINE...", false, true);
 
       try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "triggerSend" })
-        });
+        const url = `${getApiUrl()}?action=triggerSend`;
+        const res = await fetch(url);
         const data = await res.json();
-
+        
         if (data.status === "success") {
-          alert("✨ " + data.message);
+          alert(`✨ ${data.message}`);
+          showStatus(data.message);
         } else {
-          alert("❌ ส่งไม่สำเร็จ: " + (data.message || "กรุณาตรวจสอบ Group ID ในแผ่นงาน member"));
+          alert(`❌ ส่งล้มเหลว: ${data.message}`);
+          showStatus(data.message, true);
         }
       } catch (e) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย: " + e.toString());
-      } finally {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+        showStatus("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
       }
     }
 
-    // Initialize LIFF & Load Data
-    liff.init({ liffId: "2012072125-T2uPldCc" }).then(() => {
-      loadDashboardData();
-    }).catch(() => {
-      loadDashboardData(); // เผื่อรันผ่านเบสพาวเวอร์ปกติที่ไม่ใช่ LIFF SDK โดยตรง
-    });
+    window.onload = loadInitialData;
   </script>
 </body>
 </html>
