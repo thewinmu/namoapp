@@ -15,17 +15,13 @@
 
     body {
       font-family: 'Prompt', sans-serif;
-      /* โทนสีฟ้า Luxury (Deep Sapphire Blue to Luminous Sky Radial Gradient) */
       background: radial-gradient(circle at center, #0f172a 0%, #080c19 65%, #02040a 100%);
       color: #F3F4F6;
       touch-action: manipulation;
     }
 
-    .font-cinzel {
-      font-family: 'Cinzel', serif;
-    }
+    .font-cinzel { font-family: 'Cinzel', serif; }
 
-    /* Gold & Luminous Sky Blue Glow */
     .gold-gradient-text {
       background: linear-gradient(135deg, #FFF7AD 0%, #F59E0B 50%, #D97706 100%);
       -webkit-background-clip: text;
@@ -37,47 +33,18 @@
       box-shadow: 0 0 22px rgba(14, 165, 233, 0.2), inset 0 0 12px rgba(251, 191, 36, 0.1);
     }
 
-    .perspective-container {
-      perspective: 1200px;
-    }
+    .perspective-container { perspective: 1200px; }
+    .card-3d-wrap { transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .card-3d-wrap.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { backface-visibility: hidden; border-radius: 1.25rem; }
+    .card-back { transform: rotateY(180deg); }
 
-    .card-3d-wrap {
-      transform-style: preserve-3d;
-      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .card-3d-wrap.flipped {
-      transform: rotateY(180deg);
-    }
-
-    .card-front, .card-back {
-      backface-visibility: hidden;
-      border-radius: 1.25rem;
-    }
-
-    .card-back {
-      transform: rotateY(180deg);
-    }
-
-    /* Shimmer Effect Aura */
-    .shimmer {
-      position: relative;
-      overflow: hidden;
-    }
-
+    .shimmer { position: relative; overflow: hidden; }
     .shimmer::after {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        60deg,
-        transparent 30%,
-        rgba(56, 189, 248, 0.25) 50%,
-        transparent 70%
-      );
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: linear-gradient(60deg, transparent 30%, rgba(56, 189, 248, 0.25) 50%, transparent 70%);
       transform: rotate(30deg);
       animation: shimmerAnim 3.5s infinite linear;
     }
@@ -87,7 +54,6 @@
       100% { transform: translate(100%, 100%) rotate(30deg); }
     }
 
-    /* สำรับไพ่ขนาดขยาย 10% : 143px x 220px */
     .deck-card {
       position: absolute;
       width: 143px;
@@ -100,53 +66,41 @@
 
 <body class="min-h-screen flex flex-col justify-between p-4 overflow-x-hidden select-none">
 
-  <!-- Header Section -->
   <header class="text-center pt-4 space-y-1">
     <p class="font-cinzel text-xs tracking-[0.3em] gold-gradient-text uppercase font-bold">Sacred Guidance</p>
     <h1 class="text-2xl font-bold text-sky-100/90 tracking-wide font-cinzel drop-shadow-[0_0_12px_rgba(56,189,248,0.5)]">Cards Of The Day</h1>
     <p id="sub-title" class="text-xs text-sky-200/80 font-light">ตั้งจิตอธิษฐานแล้วเลือกไพ่ประจำวันของคุณ 1 ใบ</p>
   </header>
 
-  <!-- Main Interactive Area -->
   <main class="flex-1 flex flex-col items-center justify-center my-6 relative w-full max-w-md mx-auto perspective-container">
     
-    <!-- Connection Error Notice Box (ระบบดักจับข้อผิดพลาดการเชื่อมต่อ) -->
+    <!-- Error Box -->
     <div id="error-box" class="hidden absolute z-30 bg-slate-900/95 border border-red-500/50 p-6 rounded-2xl text-center space-y-3 shadow-2xl backdrop-blur-md w-11/12 max-w-xs">
       <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto text-red-400 text-xl">
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <h3 class="font-bold text-sm text-red-200">การเชื่อมต่อขัดข้อง</h3>
-      <p id="error-message" class="text-[11px] text-slate-300 leading-relaxed">ไม่สามารถติดต่อเซิร์ฟเวอร์ Google Apps Script ได้ กรุณาตรวจสอบลิงก์ API หรือสิทธิ์การเข้าถึง</p>
+      <p id="error-message" class="text-[11px] text-slate-300 leading-relaxed">ไม่สามารถติดต่อเซิร์ฟเวอร์ Google Apps Script ได้</p>
       <button onclick="retryConnection()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs py-2.5 rounded-xl transition shadow">
         <i class="fa-solid fa-rotate-right mr-1"></i> ลองใหม่อีกครั้ง
       </button>
     </div>
 
-    <!-- 1. Card Deck Container -->
-    <div id="deck-container" class="relative w-full h-[280px] flex items-center justify-center">
-      <!-- Cards rendered dynamically -->
-    </div>
+    <div id="deck-container" class="relative w-full h-[280px] flex items-center justify-center"></div>
 
-    <!-- 2. Selected Revealed Card (ขนาด 242px x 374px) -->
     <div id="revealed-card-box" class="hidden w-[242px] h-[374px] relative perspective-container">
       <div id="card-3d" class="card-3d-wrap w-full h-full relative shadow-[0_0_40px_rgba(14,165,233,0.35)] rounded-2xl">
-        
-        <!-- Card Front -->
         <div class="card-front absolute inset-0 w-full h-full blue-gold-border bg-gradient-to-br from-slate-900 via-sky-950 to-indigo-950 p-2.5 flex flex-col items-center justify-center shimmer">
           <div class="w-full h-full border border-sky-400/30 rounded-xl flex items-center justify-center bg-sky-950/40 backdrop-blur-sm">
             <i class="fa-solid fa-sparkles text-4xl gold-gradient-text animate-pulse"></i>
           </div>
         </div>
-
-        <!-- Card Back -->
         <div class="card-back absolute inset-0 w-full h-full blue-gold-border rounded-2xl overflow-hidden bg-slate-900 shadow-[0_0_35px_rgba(56,189,248,0.4)]">
           <img id="card-img-result" src="" alt="Card of the day" class="w-full h-full object-cover">
         </div>
-
       </div>
     </div>
 
-    <!-- Loading Glow Text -->
     <div id="loading-text" class="hidden mt-6 text-sky-200/90 text-xs flex items-center gap-2 drop-shadow">
       <i class="fa-solid fa-wand-magic-sparkles animate-spin text-sky-400"></i>
       <span>กำลังสื่อจิตเชื่อมต่อการ์ด...</span>
@@ -154,39 +108,28 @@
 
   </main>
 
-  <!-- Bottom Action Buttons -->
   <footer class="w-full max-w-md mx-auto space-y-3 pb-4">
-    
-    <!-- Shuffle Button -->
     <button id="btn-shuffle" onclick="shuffleAndSpread()" class="w-full blue-gold-border bg-gradient-to-r from-sky-950/70 via-slate-900 to-sky-950/70 hover:from-sky-900 hover:to-slate-800 text-sky-100 font-medium text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
       <i class="fa-solid fa-arrows-rotate text-sky-400"></i> สับไพ่ใหม่
     </button>
-
-    <!-- Share Button -->
     <button id="btn-share" onclick="shareCardResult()" class="hidden w-full bg-gradient-to-r from-amber-400 via-sky-500 to-amber-500 hover:from-amber-300 hover:to-sky-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-xl">
       <i class="fa-solid fa-share-nodes"></i> แชร์คำทำนายลงในแชต
     </button>
-
   </footer>
 
   <script>
-    // URL Web App ของคุณ
-    const API_URL = "https://script.google.com/macros/s/AKfycbyBz-Fp81B6MBcA0rcr4ZEH-E6Q3kzfvfMamlVnzQsw6YiHXyzmry1uQTJ00v3bhhQWlA/exec";
+    // ดึง URL ล่าสุดจากช่อง A1 ใน Sheet 'url' ที่คุณบันทึกไว้โดยอัตโนมัติ
+    const API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
     let selectedCardUrl = "";
     let isFlipping = false;
 
     function renderDeck() {
       const container = document.getElementById('deck-container');
       container.innerHTML = '';
-      
       for (let i = 0; i < 5; i++) {
         const card = document.createElement('div');
         card.className = `deck-card blue-gold-border bg-gradient-to-br from-slate-900 via-sky-950 to-indigo-950 p-2 rounded-xl shadow-2xl shimmer`;
-        card.innerHTML = `
-          <div class="w-full h-full border border-sky-300/30 rounded-lg flex items-center justify-center bg-sky-950/30">
-            <i class="fa-solid fa-star text-sky-300/50 text-sm"></i>
-          </div>
-        `;
+        card.innerHTML = `<div class="w-full h-full border border-sky-300/30 rounded-lg flex items-center justify-center bg-sky-950/30"><i class="fa-solid fa-star text-sky-300/50 text-sm"></i></div>`;
         
         const angle = (i - 2) * 13; 
         const translateX = (i - 2) * 40; 
@@ -200,7 +143,6 @@
 
     function shuffleAndSpread() {
       if (isFlipping) return;
-      
       document.getElementById('error-box').classList.add('hidden');
       document.getElementById('revealed-card-box').classList.add('hidden');
       document.getElementById('deck-container').classList.remove('hidden');
@@ -232,17 +174,11 @@
       document.getElementById('loading-text').classList.remove('hidden');
       document.getElementById('error-box').classList.add('hidden');
 
-      gsap.to(selectedCardElement, {
-        y: -55, scale: 1.12, duration: 0.3, yoyo: true, repeat: 1
-      });
+      gsap.to(selectedCardElement, { y: -55, scale: 1.12, duration: 0.3, yoyo: true, repeat: 1 });
 
       try {
         const response = await fetch(`${API_URL}?action=getRandomCard`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
 
         if (data.status === 'success' && data.imageUrl) {
@@ -250,13 +186,11 @@
           document.getElementById('card-img-result').src = selectedCardUrl;
           setTimeout(() => showRevealedCard(), 600);
         } else {
-          // ดักจับเคส API ตอบกลับแต่มีข้อผิดพลาด
-          showErrorNotice(data.message || "ไม่สามารถดึงรูปภาพการ์ดจาก Google Drive ได้");
+          showErrorNotice(data.message || "ไม่สามารถดึงรูปภาพการ์ดได้");
           isFlipping = false;
         }
       } catch (err) {
-        // ดักจับเคสเครือข่ายล่ม / CORS / URL ผิดพลาด
-        showErrorNotice("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กรุณาตรวจสอบลิงก์ Web App และสิทธิ์การใช้งาน (Anyone)");
+        showErrorNotice("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กรุณาตรวจสอบลิงก์ Web App");
         isFlipping = false;
       } finally {
         document.getElementById('loading-text').classList.add('hidden');
@@ -283,14 +217,12 @@
 
       setTimeout(() => {
         card3D.classList.add('flipped');
-        
         confetti({
           particleCount: 65,
           spread: 70,
           origin: { y: 0.6 },
           colors: ['#FFD700', '#38BDF8', '#0284C7', '#FFFFFF']
         });
-
         document.getElementById('sub-title').innerText = "✨ Cards Of The Day ของคุณเปิดออกแล้ว ✨";
         document.getElementById('btn-share').classList.remove('hidden');
         isFlipping = false;
@@ -298,67 +230,33 @@
     }
 
     async function shareCardResult() {
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-
+      if (!liff.isLoggedIn()) { liff.login(); return; }
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
           {
             "type": "flex",
             "altText": "🔮 Cards Of The Day ของฉันวันนี้",
             "contents": {
-              "type": "bubble",
-              "size": "mega",
-              "styles": {
-                "body": { "backgroundColor": "#080C19" }
-              },
+              "type": "bubble", "size": "mega",
+              "styles": { "body": { "backgroundColor": "#080C19" } },
               "body": {
-                "type": "box",
-                "layout": "vertical",
+                "type": "box", "layout": "vertical",
                 "contents": [
-                  {
-                    "type": "text",
-                    "text": "CARDS OF THE DAY",
-                    "weight": "bold",
-                    "color": "#38BDF8",
-                    "size": "xs",
-                    "align": "center"
-                  },
-                  {
-                    "type": "box",
-                    "layout": "vertical",
-                    "margin": "md",
-                    "cornerRadius": "14px",
-                    "contents": [
-                      {
-                        "type": "image",
-                        "url": selectedCardUrl,
-                        "size": "full",
-                        "aspectMode": "cover",
-                        "aspectRatio": "3:4"
-                      }
-                    ]
-                  }
+                  { "type": "text", "text": "CARDS OF THE DAY", "weight": "bold", "color": "#38BDF8", "size": "xs", "align": "center" },
+                  { "type": "box", "layout": "vertical", "margin": "md", "cornerRadius": "14px", "contents": [
+                    { "type": "image", "url": selectedCardUrl, "size": "full", "aspectMode": "cover", "aspectRatio": "3:4" }
+                  ]}
                 ]
               }
             }
           }
-        ]).then(() => {
-          liff.closeWindow();
-        }).catch(err => console.error(err));
+        ]).then(() => liff.closeWindow()).catch(err => console.error(err));
       } else {
         alert("เบราว์เซอร์นี้ไม่รองรับการแชร์โดยตรง");
       }
     }
 
-    // Initialize LIFF
-    liff.init({ liffId: "2012072125-lqyIAzeR" }).then(() => {
-      renderDeck();
-    }).catch(() => {
-      renderDeck();
-    });
+    liff.init({ liffId: "2012072125-lqyIAzeR" }).then(() => renderDeck()).catch(() => renderDeck());
   </script>
 </body>
 </html>
