@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>namobot Admin App</title>
+  <title>namobot - Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { background-color: #f8fafc; font-family: 'Sukhumvit Set', 'Kanit', sans-serif; }
   </style>
 </head>
-<body class="pb-20 max-w-md mx-auto bg-slate-50 min-h-screen shadow-lg relative">
+<body class="pb-24 max-w-md mx-auto bg-slate-50 min-h-screen shadow-lg relative">
 
   <!-- Header -->
-  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-50 shadow-md flex items-center justify-between">
+  <header class="bg-indigo-600 text-white p-4 sticky top-0 z-50 shadow-md flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <i class="fa-solid fa-robot text-xl"></i>
       <h1 class="font-bold text-lg">namobot Admin</h1>
     </div>
-    <span class="bg-emerald-700 text-xs px-2.5 py-1 rounded-full border border-emerald-400">v1.2</span>
+    <span class="bg-indigo-700 text-xs px-2.5 py-1 rounded-full border border-indigo-400 font-semibold">Dashboard</span>
   </header>
 
-  <!-- Notification Toast -->
+  <!-- Toast Notification -->
   <div id="toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2 rounded-full shadow-xl transition-all duration-300 z-50 flex items-center space-x-2">
     <i id="toast-icon" class="fa-solid fa-circle-info"></i>
     <span id="toast-message">แจ้งเตือน</span>
@@ -29,82 +31,125 @@
 
   <!-- Content Container -->
   <main class="p-4 space-y-4">
-    
-    <!-- URL Configuration Section -->
-    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <label class="block text-xs font-semibold text-gray-500 mb-1">
-        <i class="fa-solid fa-link text-emerald-600 mr-1"></i> Google Apps Script Web App URL
+
+    <!-- LIFF User Profile Card -->
+    <section id="userCard" class="bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img id="userAvatar" class="w-10 h-10 rounded-full bg-slate-200 border border-indigo-200 object-cover" src="https://via.placeholder.com/40?text=USER" alt="Avatar" />
+        <div>
+          <p id="userName" class="text-xs font-bold text-gray-800">กำลังเชื่อมต่อ LIFF...</p>
+          <p id="userId" class="text-[10px] text-gray-400 font-mono">LINE User ID</p>
+        </div>
+      </div>
+      <span id="liffBadge" class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-medium">LIFF Init</span>
+    </section>
+
+    <!-- Stats Card -->
+    <section class="grid grid-cols-2 gap-3">
+      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-users text-sm"></i>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-400 font-medium">จำนวนกลุ่มทั้งหมด</p>
+          <p id="groupCount" class="text-base font-bold text-gray-800">0</p>
+        </div>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-user-check text-sm"></i>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-400 font-medium">สมาชิกทั้งหมด</p>
+          <p id="userCount" class="text-base font-bold text-gray-800">0</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Config Card -->
+    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-2">
+      <label class="block text-xs font-semibold text-gray-600">
+        <i class="fa-solid fa-link text-indigo-600 mr-1"></i> Google Apps Script Web App URL
       </label>
       <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec" 
-             class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-gray-50 font-mono">
-      <button onclick="saveApiUrl()" class="mt-2 w-full bg-slate-800 text-white text-xs py-2 rounded-lg font-medium hover:bg-slate-700 active:scale-[0.98] transition">
-        บันทึกการตั้งค่า API URL
-      </button>
-    </section>
-
-    <!-- Welcome Message Editor -->
-    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <div class="flex justify-between items-center mb-2">
-        <label class="text-sm font-bold text-gray-700 flex items-center">
-          <i class="fa-solid fa-pen-to-square text-emerald-600 mr-2"></i> ข้อความต้อนรับกลุ่ม
-        </label>
-        <button onclick="fetchAlertData()" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-          <i class="fa-solid fa-rotate mr-1"></i> ดึงข้อมูล
+             class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 bg-gray-50 transition">
+      <div class="flex space-x-2 pt-1">
+        <button onclick="saveApiUrl()" class="flex-1 bg-slate-800 text-white text-xs py-2 rounded-lg font-medium hover:bg-slate-700 active:scale-[0.98] transition shadow-sm">
+          บันทึก URL
         </button>
-      </div>
-      <textarea id="alertTextarea" rows="3" oninput="updatePreview()" 
-                class="w-full text-xs p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-                placeholder="กำลังโหลดข้อมูล..."></textarea>
-      
-      <div class="mt-3 flex space-x-2">
-        <button onclick="saveAlertData()" class="flex-1 bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:bg-emerald-700 active:scale-[0.98] transition">
-          <i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกลง Sheet
-        </button>
-        <button onclick="triggerDailyAlert()" class="bg-sky-600 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow-sm hover:bg-sky-700 active:scale-[0.98] transition">
-          <i class="fa-solid fa-paper-plane mr-1"></i> ส่งต้อนรับ
+        <button onclick="fetchInitialData()" class="bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs px-3 py-2 rounded-lg font-medium hover:bg-indigo-100 active:scale-[0.98] transition flex items-center space-x-1">
+          <i class="fa-solid fa-rotate"></i>
+          <span>รีเฟรช</span>
         </button>
       </div>
     </section>
 
-    <!-- Preview Box -->
-    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-        <i class="fa-solid fa-eye text-emerald-600 mr-1.5"></i> ตัวอย่าง Flex Message ต้อนรับ
-      </h3>
-      <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white max-w-[280px] mx-auto">
-        <div class="bg-[#06C755] p-2 text-white font-bold text-xs text-center">
-          🎉 ยินดีต้อนรับเข้าสู่กลุ่มค่ะ!
-        </div>
-        <div class="p-3 bg-white text-center">
-          <div id="flexPreviewText" class="text-xs font-bold text-gray-800 leading-relaxed whitespace-pre-wrap">
-            กำลังรอข้อความ...
-          </div>
-        </div>
-        <div class="p-2.5 bg-[#F7F8FA] border-t border-gray-100 space-y-1.5">
-          <div class="bg-[#06C755] text-white text-[11px] font-bold py-1.5 text-center rounded-md">📖 อ่านกฎกลุ่ม</div>
-          <div class="bg-[#17A2B8] text-white text-[11px] font-bold py-1.5 text-center rounded-md">🎉 ร่วมกิจกรรม</div>
-        </div>
+    <!-- Welcome Message Management Card -->
+    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+        <h2 class="text-sm font-bold text-gray-800 flex items-center">
+          <i class="fa-solid fa-bullhorn text-indigo-600 mr-2"></i> ข้อความต้อนรับเข้ากลุ่ม
+        </h2>
+        <span class="text-[10px] text-gray-400 font-normal">Sheet: alert</span>
+      </div>
+
+      <textarea id="alertText" rows="4" placeholder="กรอกข้อความต้อนรับที่จะแสดงเมื่อสมาชิกเข้ากลุ่ม..." 
+                class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50 leading-relaxed transition"></textarea>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="updateAlertText()" class="bg-indigo-600 text-white text-xs py-2.5 rounded-lg font-bold hover:bg-indigo-700 active:scale-[0.98] transition shadow-sm flex items-center justify-center space-x-1">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>บันทึกข้อความ</span>
+        </button>
+        <button onclick="triggerBroadcastAlert()" class="bg-emerald-600 text-white text-xs py-2.5 rounded-lg font-bold hover:bg-emerald-700 active:scale-[0.98] transition shadow-sm flex items-center justify-center space-x-1">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>ส่งเข้าทุกกลุ่ม</span>
+        </button>
       </div>
     </section>
 
-    <!-- Link to Law.html -->
-    <section class="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-scale-balanced text-emerald-600 text-lg"></i>
-        <div>
-          <h4 class="text-xs font-bold text-emerald-900">หน้ากฎระเบียบกลุ่ม (Law.html)</h4>
-          <p class="text-[10px] text-emerald-600">เปิดดูหน้าเว็บ LIFF กฎกลุ่มเฉพาะกิจ</p>
-        </div>
+    <!-- Navigation Link Card for Rules Management -->
+    <section class="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 rounded-xl shadow-md text-white flex justify-between items-center">
+      <div>
+        <h3 class="font-bold text-sm flex items-center">
+          <i class="fa-solid fa-scroll mr-2"></i> จัดการกฎระเบียบกลุ่ม
+        </h3>
+        <p class="text-[11px] text-emerald-100 mt-0.5">เปิดหน้า Law.html เพื่อดูและส่งกฎกลุ่ม</p>
       </div>
-      <a href="Law.html" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow hover:bg-emerald-700">
-        เปิดดูหน้า
+      <a href="Law.html" class="bg-white text-emerald-700 text-xs px-3.5 py-2 rounded-lg font-bold shadow-sm hover:bg-emerald-50 active:scale-95 transition flex items-center space-x-1">
+        <span>ไปจัดการ</span>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
       </a>
     </section>
 
   </main>
 
+  <!-- Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex justify-around items-center p-2.5 z-50">
+    <a href="index.html" class="flex flex-col items-center text-indigo-600 font-bold text-[11px]">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>หน้าหลัก</span>
+    </a>
+    <a href="Law.html" class="flex flex-col items-center text-gray-400 hover:text-emerald-600 font-medium text-[11px] transition">
+      <i class="fa-solid fa-scroll text-base"></i>
+      <span>กฎระเบียบ</span>
+    </a>
+    <button onclick="closeLiffWindow()" class="flex flex-col items-center text-rose-500 font-medium text-[11px] hover:text-rose-700 transition">
+      <i class="fa-solid fa-power-off text-base"></i>
+      <span>ปิดหน้าต่าง</span>
+    </button>
+  </nav>
+
   <script>
-    document.getElementById('scriptUrl').value = localStorage.getItem('NAMOBOT_API_URL') || '';
+    const MY_LIFF_ID = "2012072125-RXgWMeiV";
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById('scriptUrl').value = localStorage.getItem('NAMOBOT_API_URL') || '';
+      initLiff();
+      if(getApiUrl(true)) {
+        fetchInitialData();
+      }
+    });
 
     function showToast(msg, isSuccess = true) {
       const toast = document.getElementById('toast');
@@ -120,70 +165,128 @@
       if(!url) return showToast('กรุณากรอก Web App URL', false);
       localStorage.setItem('NAMOBOT_API_URL', url);
       showToast('บันทึก API URL เรียบร้อย');
-      fetchAlertData();
+      fetchInitialData();
     }
 
-    function getApiUrl() {
-      return localStorage.getItem('NAMOBOT_API_URL');
+    function getApiUrl(silent = false) {
+      const url = localStorage.getItem('NAMOBOT_API_URL');
+      if(!url && !silent) {
+        showToast('กรุณาใส่ Web App URL ก่อนใช้งาน', false);
+      }
+      return url;
     }
 
-    function updatePreview() {
-      const text = document.getElementById('alertTextarea').value;
-      document.getElementById('flexPreviewText').innerText = text || 'ไม่มีข้อความแสดงผล';
+    // Initialize LIFF SDK
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+        const badge = document.getElementById('liffBadge');
+
+        if (liff.isLoggedIn()) {
+          badge.innerText = "LIFF Ready";
+          badge.className = "bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-medium";
+
+          const profile = await liff.getProfile();
+          document.getElementById('userName').innerText = profile.displayName;
+          document.getElementById('userId').innerText = profile.userId;
+          if (profile.pictureUrl) {
+            document.getElementById('userAvatar').src = profile.pictureUrl;
+          }
+        } else {
+          badge.innerText = "Guest Mode";
+          document.getElementById('userName').innerText = "ไม่ได้เข้าสู่ระบบ LINE";
+        }
+      } catch (err) {
+        console.error("LIFF Init Error:", err);
+        const badge = document.getElementById('liffBadge');
+        badge.innerText = "Browser Mode";
+        document.getElementById('userName').innerText = "โหมดทดสอบภายนอก";
+      }
     }
 
-    async function fetchAlertData() {
+    // Fetch alert text and member stats from Web App API
+    async function fetchInitialData() {
       const apiUrl = getApiUrl();
       if(!apiUrl) return;
 
       try {
-        const res = await fetch(`${apiUrl}?action=getAlert`);
-        const data = await res.json();
-        if(data.status === 'success') {
-          document.getElementById('alertTextarea').value = data.text;
-          updatePreview();
+        // Fetch Alert Text
+        const alertRes = await fetch(`${apiUrl}?action=getAlert`);
+        const alertData = await alertRes.json();
+        if(alertData.status === 'success' && alertData.text) {
+          document.getElementById('alertText').value = alertData.text;
         }
-      } catch(e) {
-        showToast('โหลดข้อมูลไม่สำเร็จ', false);
+
+        // Fetch Member Stats
+        const memberRes = await fetch(`${apiUrl}?action=getMembers`);
+        const memberData = await memberRes.json();
+        if(memberData.status === 'success') {
+          document.getElementById('groupCount').innerText = memberData.groupCount || 0;
+          document.getElementById('userCount').innerText = memberData.userCount || 0;
+        }
+
+        showToast('โหลดข้อมูลล่าสุดเรียบร้อย');
+      } catch (e) {
+        showToast('ดาวน์โหลดข้อมูลไม่สำเร็จ', false);
       }
     }
 
-    async function saveAlertData() {
+    // Update Welcome Alert Text
+    async function updateAlertText() {
       const apiUrl = getApiUrl();
-      if(!apiUrl) return showToast('กรุณาตั้งค่า API URL ก่อน', false);
+      if(!apiUrl) return;
 
-      const text = document.getElementById('alertTextarea').value;
+      const text = document.getElementById('alertText').value.trim();
+      if(!text) return showToast('กรุณากรอกข้อความต้อนรับ', false);
+
+      showToast('กำลังบันทึกข้อความ...');
       try {
         const res = await fetch(apiUrl, {
           method: 'POST',
           body: JSON.stringify({ action: 'updateAlert', text: text })
         });
         const data = await res.json();
-        if(data.status === 'success') showToast('บันทึกข้อมูลเรียบร้อยแล้ว');
+        if(data.status === 'success') {
+          showToast('บันทึกข้อความต้อนรับสำเร็จแล้ว');
+        } else {
+          showToast('บันทึกไม่สำเร็จ: ' + data.message, false);
+        }
       } catch(e) {
-        showToast('บันทึกข้อมูลไม่สำเร็จ', false);
+        showToast('เกิดข้อผิดพลาดในการบันทึก', false);
       }
     }
 
-    async function triggerDailyAlert() {
+    // Trigger Broadcast Welcome Alert
+    async function triggerBroadcastAlert() {
       const apiUrl = getApiUrl();
-      if(!apiUrl) return showToast('กรุณาตั้งค่า API URL ก่อน', false);
+      if(!apiUrl) return;
 
-      showToast('กำลังส่งข้อความ...');
+      if(!confirm('คุณต้องการส่งข้อความต้อนรับไปยังทุกกลุ่มใช่หรือไม่?')) return;
+
+      showToast('กำลังส่งข้อความเข้ากลุ่ม...');
       try {
         const res = await fetch(apiUrl, {
           method: 'POST',
           body: JSON.stringify({ action: 'triggerSend' })
         });
         const data = await res.json();
-        if(data.status === 'success') showToast('ส่งข้อความสำเร็จแล้ว');
-        else showToast('ส่งไม่สำเร็จ: ' + data.message, false);
+        if(data.status === 'success') {
+          showToast('ส่งข้อความต้อนรับเข้าทุกกลุ่มเรียบร้อยแล้ว');
+        } else {
+          showToast('ส่งไม่สำเร็จ: ' + data.message, false);
+        }
       } catch(e) {
-        showToast('ส่งไม่สำเร็จ ตรวจสอบโควตา LINE', false);
+        showToast('เกิดข้อผิดพลาดในการส่ง', false);
       }
     }
 
-    if(getApiUrl()) fetchAlertData();
+    function closeLiffWindow() {
+      if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
+        liff.closeWindow();
+      } else {
+        window.close();
+      }
+    }
   </script>
 </body>
 </html>
