@@ -38,14 +38,6 @@
       background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
       transform: translateY(-1px);
     }
-    .btn-success {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
-      transition: all 0.2s ease;
-    }
-    .btn-success:hover {
-      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-      transform: translateY(-1px);
-    }
   </style>
 </head>
 <body class="p-4 md:p-8">
@@ -60,12 +52,12 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-slate-800">NamoBot Admin Dashboard</h1>
-          <p class="text-xs text-slate-500">ระบบจัดการข้อความบรอดแคสต์ และกฎระเบียบประจำกลุ่ม LINE</p>
+          <p class="text-xs text-slate-500">ระบบจัดการข้อความประกาศ และกฎระเบียบประจำกลุ่ม LINE</p>
         </div>
       </div>
       <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-medium">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-        <span>ระบบพร้อมใช้งาน</span>
+        <span>ระบบทำงานอัตโนมัติ 05:00 น.</span>
       </div>
     </header>
 
@@ -125,16 +117,13 @@
               <i class="fa-solid fa-rotate"></i> รีเฟรช
             </button>
           </div>
-          <textarea id="alert-textarea" rows="5" placeholder="กรอกข้อความประกาศหรือข้อความต้อนรับ..."
+          <textarea id="alert-textarea" rows="6" placeholder="กรอกข้อความประกาศหรือข้อความต้อนรับ..."
                     class="glass-input w-full p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed resize-none"></textarea>
         </div>
 
-        <div class="space-y-2 pt-2">
+        <div class="pt-2">
           <button onclick="saveAlertText()" class="w-full btn-primary text-white font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
             <i class="fa-solid fa-save"></i> บันทึกข้อความประกาศ
-          </button>
-          <button onclick="triggerBroadcast()" class="w-full btn-success text-white font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md">
-            <i class="fa-solid fa-paper-plane"></i> ส่งต้อนรับเข้าทุกกลุ่ม LINE
           </button>
         </div>
       </section>
@@ -151,7 +140,7 @@
               <i class="fa-solid fa-rotate"></i> รีเฟรช
             </button>
           </div>
-          <textarea id="rules-textarea" rows="5" placeholder="กรอกข้อปฏิบัติประจำกลุ่ม..."
+          <textarea id="rules-textarea" rows="6" placeholder="กรอกข้อปฏิบัติประจำกลุ่ม..."
                     class="glass-input w-full p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed resize-none"></textarea>
         </div>
 
@@ -164,7 +153,7 @@
 
     </div>
 
-    <!-- Status Log Modal / Banner -->
+    <!-- Status Log Banner -->
     <div id="status-banner" class="hidden glass-card rounded-2xl p-4 border-l-4 border-sky-500 flex items-center justify-between text-xs">
       <div class="flex items-center gap-2 text-slate-700">
         <i id="status-icon" class="fa-solid fa-spinner animate-spin text-sky-600"></i>
@@ -178,7 +167,6 @@
   </div>
 
   <script>
-    // URL หลักเริ่มต้น
     let API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
 
     function showStatus(msg, isError = false, isLoading = false) {
@@ -290,28 +278,6 @@
       API_URL = newUrl;
       showStatus("อัปเดต URL การเชื่อมต่อเรียบร้อย");
       loadInitialData();
-    }
-
-    async function triggerBroadcast() {
-      if (!confirm("คุณต้องการส่งข้อความประกาศนี้ไปยังทุกกลุ่ม LINE ใช่หรือไม่?")) return;
-      showStatus("กำลังส่งข้อความเข้าทุกกลุ่ม LINE...", false, true);
-
-      try {
-        const url = `${getApiUrl()}?action=triggerSend`;
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        if (data.status === "success") {
-          alert(`✨ ${data.message}`);
-          showStatus(data.message);
-        } else {
-          alert(`❌ ส่งล้มเหลว: ${data.message}`);
-          showStatus(data.message, true);
-        }
-      } catch (e) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-        showStatus("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
-      }
     }
 
     window.onload = loadInitialData;
