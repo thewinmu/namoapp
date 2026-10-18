@@ -1,208 +1,424 @@
-<script>
-  // URL สำรองเริ่มต้นสำหรับยิงดึงค่าครั้งแรก
-  let API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
-
-  function showStatus(msg, isError = false, isLoading = false) {
-    const banner = document.getElementById('status-banner');
-    const icon = document.getElementById('status-icon');
-    const message = document.getElementById('status-message');
-
-    banner.classList.remove('hidden');
-    message.innerText = msg;
-
-    if (isLoading) {
-      icon.className = "fa-solid fa-spinner animate-spin text-sky-600";
-      banner.className = "glass-card rounded-2xl p-4 border-l-4 border-sky-500 flex items-center justify-between text-xs";
-    } else if (isError) {
-      icon.className = "fa-solid fa-triangle-exclamation text-red-500";
-      banner.className = "glass-card rounded-2xl p-4 border-l-4 border-red-500 flex items-center justify-between text-xs";
-    } else {
-      icon.className = "fa-solid fa-circle-check text-emerald-500";
-      banner.className = "glass-card rounded-2xl p-4 border-l-4 border-emerald-500 flex items-center justify-between text-xs";
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NamoBot Admin Dashboard - Modern Light Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
+      color: #1e293b;
+      min-height: 100vh;
     }
-  }
-
-  function updateConnectionBadge(isConnected) {
-    const badge = document.getElementById('connection-badge');
-    const text = document.getElementById('connection-status-text');
-    if (isConnected) {
-      badge.className = "flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-medium";
-      badge.querySelector('span').className = "w-2 h-2 rounded-full bg-emerald-500 animate-ping";
-      text.innerText = "เชื่อมต่อระบบเรียบร้อย";
-    } else {
-      badge.className = "flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-3 py-1.5 rounded-full text-xs font-medium";
-      badge.querySelector('span').className = "w-2 h-2 rounded-full bg-red-500";
-      text.innerText = "การเชื่อมต่อล้มเหลว";
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
     }
-  }
-
-  function getApiUrl() {
-    const input = document.getElementById('app-url-input').value.trim();
-    return input || API_URL;
-  }
-
-  // 1. ฟังก์ชันดึง URL จากช่อง A1 ของชีท url โดยตรง
-  async function loadAppUrlFromSheet() {
-    showStatus("กำลังดึง Web App URL จากแผ่นงาน url (A1)...", false, true);
-    try {
-      const res = await fetch(`${API_URL}?action=getAppUrl`);
-      const data = await res.json();
-      if (data.status === "success" && data.url) {
-        API_URL = data.url;
-        document.getElementById('app-url-input').value = data.url;
-        showStatus("ดึง URL จากแผ่นงาน url (A1) สำเร็จ");
-        return data.url;
-      }
-    } catch (e) {
-      console.error("Error fetching URL from sheet A1", e);
+    .glass-input {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s ease;
     }
-    document.getElementById('app-url-input').value = API_URL;
-    return API_URL;
-  }
+    .glass-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      outline: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-1px);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+      transform: translateY(-1px);
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
 
-  // 2. ปุ่ม "บันทึก" บันทึก URL ใหม่ลงชีท url (ช่อง A1)
-  async function saveAppUrlToSheet() {
-    const inputUrl = document.getElementById('app-url-input').value.trim();
-    if (!inputUrl) return alert("กรุณากรอก URL ให้ถูกต้อง");
-    
-    showStatus("กำลังบันทึก URL ลงแผ่นงาน url (A1)...", false, true);
-    try {
-      const res = await fetch(`${getApiUrl()}?action=updateAppUrl&url=${encodeURIComponent(inputUrl)}`);
-      const data = await res.json();
-      if (data.status === "success") {
-        API_URL = inputUrl;
-        showStatus("บันทึก URL ลงแผ่นงาน url (A1) เรียบร้อยแล้ว");
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Top Header Bar -->
+    <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-sky-100 border border-sky-200 rounded-xl flex items-center justify-center text-sky-600 text-2xl shadow-sm">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-800">NamoBot Admin Dashboard</h1>
+          <p class="text-xs text-slate-500">ระบบจัดการข้อความประกาศ และตั้งเวลาอัตโนมัติ</p>
+        </div>
+      </div>
+      <div id="connection-badge" class="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full text-xs font-medium">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <span id="connection-status-text">ยังไม่ได้เชื่อมต่อ</span>
+      </div>
+    </header>
+
+    <!-- Web App URL Setting Card (Dropdown List) -->
+    <section class="glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+          <i class="fa-solid fa-link text-sky-600"></i>
+          <span>ตั้งค่า Google Apps Script Web App URL (ดึงจากชีท url ช่อง A1)</span>
+        </div>
+        <span class="text-[11px] text-slate-400">เลือกรายการและบันทึก</span>
+      </div>
+      <div class="flex flex-col md:flex-row gap-3">
+        <!-- เปลี่ยนเป็น Dropdown List แสดงรายการจาก A1 -->
+        <select id="app-url-select" class="glass-input flex-1 px-4 py-2.5 rounded-xl text-xs text-slate-700 font-mono">
+          <option value="">กำลังดึงรายการ URL จากชีท url (A1)...</option>
+        </select>
+        <button onclick="saveAndConnect()" class="btn-success text-white font-medium text-xs px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึก
+        </button>
+      </div>
+    </section>
+
+    <!-- Schedule Management Card -->
+    <section class="glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+          <i class="fa-solid fa-clock text-indigo-600"></i>
+          <span>ตั้งเวลาส่งข้อความประกาศอัตโนมัติ</span>
+        </div>
+        <span id="schedule-status-badge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">
+          ยังไม่ได้ตั้งเวลา
+        </span>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <label class="text-xs text-slate-600 font-medium whitespace-nowrap">ความถี่ / เวลา:</label>
+          <select id="schedule-type-select" class="glass-input px-3 py-2 rounded-xl text-xs text-slate-700 font-semibold">
+            <option value="daily_05">ทุกวัน เวลา 05:00 น.</option>
+            <option value="every_30_mins">ทุก ๆ 30 นาที (โหมดทดสอบ)</option>
+            <option value="every_1_hour">ทุก ๆ 1 ชั่วโมง</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="setSchedule()" class="btn-primary flex-1 sm:flex-none text-white font-medium text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-calendar-check"></i> ตั้งเวลาส่ง
+          </button>
+          <button onclick="cancelSchedule()" class="btn-danger flex-1 sm:flex-none text-white font-medium text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-calendar-xmark"></i> ยกเลิกตั้งเวลา
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stat Dashboard Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-500 font-medium">กลุ่ม LINE ในระบบ</p>
+          <h3 id="stat-group-count" class="text-2xl font-bold text-sky-600 mt-1">-</h3>
+        </div>
+        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-500 font-medium">ผู้ใช้งานรายบุคคล</p>
+          <h3 id="stat-user-count" class="text-2xl font-bold text-indigo-600 mt-1">-</h3>
+        </div>
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-user-check"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Alert Box Management -->
+      <section class="glass-card rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+              <i class="fa-solid fa-bullhorn text-amber-500"></i>
+              <span>ข้อความต้อนรับ / ประกาศประจำวัน (Sheet: alert)</span>
+            </div>
+            <button onclick="fetchAlertText()" class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+          </div>
+          <textarea id="alert-textarea" rows="6" placeholder="กรอกข้อความประกาศหรือข้อความต้อนรับ..."
+                    class="glass-input w-full p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed resize-none"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="saveAlertText()" class="w-full btn-primary text-white font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-save"></i> บันทึกข้อความประกาศ
+          </button>
+        </div>
+      </section>
+
+      <!-- Rules Box Management -->
+      <section class="glass-card rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+              <i class="fa-solid fa-scale-balanced text-indigo-600"></i>
+              <span>ข้อปฏิบัติประจำกลุ่ม (Sheet: law)</span>
+            </div>
+            <button onclick="fetchRulesText()" class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+          </div>
+          <textarea id="rules-textarea" rows="6" placeholder="กรอกข้อปฏิบัติประจำกลุ่ม..."
+                    class="glass-input w-full p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed resize-none"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="saveRulesText()" class="w-full btn-primary text-white font-medium text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-save"></i> บันทึกกฎข้อบังคับ
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Status Log Banner -->
+    <div id="status-banner" class="hidden glass-card rounded-2xl p-4 border-l-4 border-sky-500 flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2 text-slate-700">
+        <i id="status-icon" class="fa-solid fa-spinner animate-spin text-sky-600"></i>
+        <span id="status-message">กำลังดำเนินการ...</span>
+      </div>
+      <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    let API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
+
+    function showStatus(msg, isError = false, isLoading = false) {
+      const banner = document.getElementById('status-banner');
+      const icon = document.getElementById('status-icon');
+      const message = document.getElementById('status-message');
+
+      banner.classList.remove('hidden');
+      message.innerText = msg;
+
+      if (isLoading) {
+        icon.className = "fa-solid fa-spinner animate-spin text-sky-600";
+        banner.className = "glass-card rounded-2xl p-4 border-l-4 border-sky-500 flex items-center justify-between text-xs";
+      } else if (isError) {
+        icon.className = "fa-solid fa-triangle-exclamation text-red-500";
+        banner.className = "glass-card rounded-2xl p-4 border-l-4 border-red-500 flex items-center justify-between text-xs";
       } else {
-        showStatus("บันทึก URL ไม่สำเร็จ: " + data.message, true);
+        icon.className = "fa-solid fa-circle-check text-emerald-500";
+        banner.className = "glass-card rounded-2xl p-4 border-l-4 border-emerald-500 flex items-center justify-between text-xs";
       }
-    } catch (e) {
-      showStatus("เกิดข้อผิดพลาดในการบันทึก URL", true);
     }
-  }
 
-  // 3. ปุ่ม "เชื่อมต่อ" ดึงค่า A1 ใหม่ + โหลดข้อมูลสถิติทั้งหมดมาแสดงผล
-  async function connectAndFetchData() {
-    showStatus("กำลังดึง URL จาก A1 และเชื่อมต่อระบบ...", false, true);
-
-    try {
-      // ดึง URL จาก A1 ก่อน
-      await loadAppUrlFromSheet();
-
-      // โหลดข้อมูล Dashboard ทั้งหมด
-      await Promise.all([
-        fetchAlertText(),
-        fetchRulesText(),
-        fetchMemberStats(),
-        fetchScheduleStatus()
-      ]);
-
-      updateConnectionBadge(true);
-      showStatus("เชื่อมต่อ และโหลดข้อมูลระบบสำเร็จเรียบร้อย");
-    } catch (err) {
-      updateConnectionBadge(false);
-      showStatus("เชื่อมต่อล้มเหลว ตรวจสอบ Web App URL อีกครั้ง", true);
+    function updateConnectionBadge(isConnected) {
+      const badge = document.getElementById('connection-badge');
+      const text = document.getElementById('connection-status-text');
+      if (isConnected) {
+        badge.className = "flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-medium";
+        badge.querySelector('span').className = "w-2 h-2 rounded-full bg-emerald-500 animate-ping";
+        text.innerText = "เชื่อมต่อระบบเรียบร้อย";
+      } else {
+        badge.className = "flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-3 py-1.5 rounded-full text-xs font-medium";
+        badge.querySelector('span').className = "w-2 h-2 rounded-full bg-red-500";
+        text.innerText = "การเชื่อมต่อล้มเหลว";
+      }
     }
-  }
 
-  async function fetchAlertText() {
-    const res = await fetch(`${getApiUrl()}?action=getAlert`);
-    const data = await res.json();
-    if (data.status === "success") document.getElementById('alert-textarea').value = data.text || "";
-  }
-
-  async function fetchRulesText() {
-    const res = await fetch(`${getApiUrl()}?action=getRules`);
-    const data = await res.json();
-    if (data.status === "success") document.getElementById('rules-textarea').value = data.text || "";
-  }
-
-  async function fetchMemberStats() {
-    const res = await fetch(`${getApiUrl()}?action=getMembers`);
-    const data = await res.json();
-    if (data.status === "success") {
-      document.getElementById('stat-group-count').innerText = `${data.groupCount || 0} กลุ่ม`;
-      document.getElementById('stat-user-count').innerText = `${data.userCount || 0} คน`;
+    function getApiUrl() {
+      const select = document.getElementById('app-url-select');
+      return select.value.trim() || API_URL;
     }
-  }
 
-  async function fetchScheduleStatus() {
-    try {
-      const res = await fetch(`${getApiUrl()}?action=getSchedule`);
-      const data = await res.json();
-      const badge = document.getElementById('schedule-status-badge');
+    // ดึง URL จากแผ่นงาน url (A1) มาใส่ใน <select> list
+    async function loadAppUrlDropdown() {
+      showStatus("กำลังดึงรายการ URL จากชีท url ช่อง A1...", false, true);
+      const select = document.getElementById('app-url-select');
       
-      if (data.status === "success" && data.active) {
-        badge.className = "text-xs bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-medium";
-        badge.innerText = `เปิดใช้งาน (${data.mode})`;
-        if (data.modeKey) document.getElementById('schedule-type-select').value = data.modeKey;
-      } else {
-        badge.className = "text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium";
-        badge.innerText = "ยังไม่ได้ตั้งเวลา";
+      try {
+        const res = await fetch(`${API_URL}?action=getAppUrl`);
+        const data = await res.json();
+        
+        select.innerHTML = ""; // ล้างค่าเดิม
+        if (data.status === "success" && data.url) {
+          API_URL = data.url;
+          const opt = document.createElement('option');
+          opt.value = data.url;
+          opt.innerText = `[A1] ${data.url}`;
+          select.appendChild(opt);
+        } else {
+          const opt = document.createElement('option');
+          opt.value = API_URL;
+          opt.innerText = API_URL;
+          select.appendChild(opt);
+        }
+      } catch (e) {
+        select.innerHTML = `<option value="${API_URL}">${API_URL}</option>`;
       }
-    } catch (e) {}
-  }
+    }
 
-  async function setSchedule() {
-    const mode = document.getElementById('schedule-type-select').value;
-    showStatus("กำลังตั้งค่าระบบเวลาอัตโนมัติ...", false, true);
-    try {
-      const res = await fetch(`${getApiUrl()}?action=setSchedule&mode=${mode}`);
+    // กดปุ่ม "บันทึก" ➔ บันทึก URL + ดึงข้อมูลทั้งหมดมาแสดงการตอบสนอง
+    async function saveAndConnect() {
+      const selectedUrl = getApiUrl();
+      showStatus("กำลังบันทึกและเชื่อมต่อระบบ...", false, true);
+
+      try {
+        // 1. ส่งบันทึก URL ลงชีท url (A1)
+        const res = await fetch(`${selectedUrl}?action=updateAppUrl&url=${encodeURIComponent(selectedUrl)}`);
+        const data = await res.json();
+
+        if (data.status === "success") {
+          API_URL = selectedUrl;
+          // 2. ดึงข้อมูล Dashboard ทั้งหมดมาแสดงผลตอบสนอง
+          await Promise.all([
+            fetchAlertText(),
+            fetchRulesText(),
+            fetchMemberStats(),
+            fetchScheduleStatus()
+          ]);
+          updateConnectionBadge(true);
+          showStatus("บันทึกข้อมูลและเชื่อมต่อระบบสำเร็จเรียบร้อย!");
+        } else {
+          updateConnectionBadge(false);
+          showStatus("บันทึกไม่สำเร็จ: " + data.message, true);
+        }
+      } catch (err) {
+        updateConnectionBadge(false);
+        showStatus("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
+      }
+    }
+
+    async function fetchAlertText() {
+      const res = await fetch(`${getApiUrl()}?action=getAlert`);
+      const data = await res.json();
+      if (data.status === "success") document.getElementById('alert-textarea').value = data.text || "";
+    }
+
+    async function fetchRulesText() {
+      const res = await fetch(`${getApiUrl()}?action=getRules`);
+      const data = await res.json();
+      if (data.status === "success") document.getElementById('rules-textarea').value = data.text || "";
+    }
+
+    async function fetchMemberStats() {
+      const res = await fetch(`${getApiUrl()}?action=getMembers`);
       const data = await res.json();
       if (data.status === "success") {
-        showStatus(data.message);
-        fetchScheduleStatus();
-      } else {
-        showStatus("ตั้งเวลาไม่สำเร็จ: " + data.message, true);
+        document.getElementById('stat-group-count').innerText = `${data.groupCount || 0} กลุ่ม`;
+        document.getElementById('stat-user-count').innerText = `${data.userCount || 0} คน`;
       }
-    } catch (e) {
-      showStatus("เกิดข้อผิดพลาดในการตั้งเวลา", true);
     }
-  }
 
-  async function cancelSchedule() {
-    if (!confirm("คุณต้องการยกเลิกการส่งอัตโนมัติใช่หรือไม่?")) return;
-    showStatus("กำลังยกเลิกการตั้งเวลา...", false, true);
-    try {
-      const res = await fetch(`${getApiUrl()}?action=cancelSchedule`);
-      const data = await res.json();
-      if (data.status === "success") {
-        showStatus(data.message);
-        fetchScheduleStatus();
-      } else {
-        showStatus("ยกเลิกไม่สำเร็จ", true);
+    async function fetchScheduleStatus() {
+      try {
+        const res = await fetch(`${getApiUrl()}?action=getSchedule`);
+        const data = await res.json();
+        const badge = document.getElementById('schedule-status-badge');
+        
+        if (data.status === "success" && data.active) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-medium";
+          badge.innerText = `เปิดใช้งาน (${data.mode})`;
+          if (data.modeKey) document.getElementById('schedule-type-select').value = data.modeKey;
+        } else {
+          badge.className = "text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium";
+          badge.innerText = "ยังไม่ได้ตั้งเวลา";
+        }
+      } catch (e) {}
+    }
+
+    async function setSchedule() {
+      const mode = document.getElementById('schedule-type-select').value;
+      showStatus("กำลังตั้งค่าระบบเวลาอัตโนมัติ...", false, true);
+      try {
+        const res = await fetch(`${getApiUrl()}?action=setSchedule&mode=${mode}`);
+        const data = await res.json();
+        if (data.status === "success") {
+          showStatus(data.message);
+          fetchScheduleStatus();
+        } else {
+          showStatus("ตั้งเวลาไม่สำเร็จ: " + data.message, true);
+        }
+      } catch (e) {
+        showStatus("เกิดข้อผิดพลาดในการตั้งเวลา", true);
       }
-    } catch (e) {
-      showStatus("เกิดข้อผิดพลาด", true);
     }
-  }
 
-  async function saveAlertText() {
-    const text = document.getElementById('alert-textarea').value;
-    showStatus("กำลังบันทึกข้อความประกาศ...", false, true);
-    try {
-      const res = await fetch(`${getApiUrl()}?action=updateAlert&text=${encodeURIComponent(text)}`);
-      const data = await res.json();
-      if (data.status === "success") showStatus("บันทึกข้อความประกาศสำเร็จ");
-      else showStatus("บันทึกไม่สำเร็จ", true);
-    } catch (e) {
-      showStatus("เชื่อมต่อล้มเหลว", true);
+    async function cancelSchedule() {
+      if (!confirm("คุณต้องการยกเลิกการส่งอัตโนมัติใช่หรือไม่?")) return;
+      showStatus("กำลังยกเลิกการตั้งเวลา...", false, true);
+      try {
+        const res = await fetch(`${getApiUrl()}?action=cancelSchedule`);
+        const data = await res.json();
+        if (data.status === "success") {
+          showStatus(data.message);
+          fetchScheduleStatus();
+        } else {
+          showStatus("ยกเลิกไม่สำเร็จ", true);
+        }
+      } catch (e) {
+        showStatus("เกิดข้อผิดพลาด", true);
+      }
     }
-  }
 
-  async function saveRulesText() {
-    const text = document.getElementById('rules-textarea').value;
-    showStatus("กำลังบันทึกกฎข้อบังคับ...", false, true);
-    try {
-      const res = await fetch(`${getApiUrl()}?action=updateRules&text=${encodeURIComponent(text)}`);
-      const data = await res.json();
-      if (data.status === "success") showStatus("บันทึกกฎข้อบังคับสำเร็จ");
-      else showStatus("บันทึกไม่สำเร็จ", true);
-    } catch (e) {
-      showStatus("เชื่อมต่อล้มเหลว", true);
+    async function saveAlertText() {
+      const text = document.getElementById('alert-textarea').value;
+      showStatus("กำลังบันทึกข้อความประกาศ...", false, true);
+      try {
+        const res = await fetch(`${getApiUrl()}?action=updateAlert&text=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        if (data.status === "success") showStatus("บันทึกข้อความประกาศสำเร็จ");
+        else showStatus("บันทึกไม่สำเร็จ", true);
+      } catch (e) {
+        showStatus("เชื่อมต่อล้มเหลว", true);
+      }
     }
-  }
 
-  window.onload = async () => {
-    await connectAndFetchData();
-  };
-</script>
+    async function saveRulesText() {
+      const text = document.getElementById('rules-textarea').value;
+      showStatus("กำลังบันทึกกฎข้อบังคับ...", false, true);
+      try {
+        const res = await fetch(`${getApiUrl()}?action=updateRules&text=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        if (data.status === "success") showStatus("บันทึกกฎข้อบังคับสำเร็จ");
+        else showStatus("บันทึกไม่สำเร็จ", true);
+      } catch (e) {
+        showStatus("เชื่อมต่อล้มเหลว", true);
+      }
+    }
+
+    window.onload = async () => {
+      await loadAppUrlDropdown();
+      await saveAndConnect();
+    };
+  </script>
+</body>
+</html>
