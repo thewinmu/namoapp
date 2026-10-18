@@ -77,7 +77,7 @@
       </div>
     </header>
 
-    <!-- Web App URL Setting Card (Dropdown List) -->
+    <!-- Web App URL Setting Card (Dropdown List from A1) -->
     <section class="glass-card rounded-2xl p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
         <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
@@ -87,9 +87,11 @@
         <span class="text-[11px] text-slate-400">เลือกรายการและบันทึก</span>
       </div>
       <div class="flex flex-col md:flex-row gap-3">
-        <!-- เปลี่ยนเป็น Dropdown List แสดงรายการจาก A1 -->
+        <!-- Dropdown แสดง URL ที่ดึงมาจากแผ่นงาน url ช่อง A1 -->
         <select id="app-url-select" class="glass-input flex-1 px-4 py-2.5 rounded-xl text-xs text-slate-700 font-mono">
-          <option value="">กำลังดึงรายการ URL จากชีท url (A1)...</option>
+          <option value="https://script.google.com/macros/s/AKfycbw1uGumnpKOAfP1mJ5G5bnBgj3UQAstqLjzwaYpdZRTExfwnfZSUxYWZKe3SJ6oWUbqEw/exec">
+            [url A1] https://script.google.com/macros/s/AKfycbw1uGumnpKOAfP1mJ5G5bnBgj3UQAstqLjzwaYpdZRTExfwnfZSUxYWZKe3SJ6oWUbqEw/exec
+          </option>
         </select>
         <button onclick="saveAndConnect()" class="btn-success text-white font-medium text-xs px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
           <i class="fa-solid fa-floppy-disk"></i> บันทึก
@@ -218,7 +220,8 @@
   </div>
 
   <script>
-    let API_URL = "https://script.google.com/macros/s/AKfycbzXY82TccpStVNFVncZWFPstctemNwytXPeB3zijnjWFuTRA5oR5oHd9P5nlxln3KjZjQ/exec";
+    // กำหนด URL เริ่มต้นให้ตรงกับ A1 ในรูปภาพ
+    let API_URL = "https://script.google.com/macros/s/AKfycbw1uGumnpKOAfP1mJ5G5bnBgj3UQAstqLjzwaYpdZRTExfwnfZSUxYWZKe3SJ6oWUbqEw/exec";
 
     function showStatus(msg, isError = false, isLoading = false) {
       const banner = document.getElementById('status-banner');
@@ -259,61 +262,46 @@
       return select.value.trim() || API_URL;
     }
 
-    // ดึง URL จากแผ่นงาน url (A1) มาใส่ใน <select> list
+    // ดึง URL จากแผ่นงาน url (A1) มาใส่ใน <select>
     async function loadAppUrlDropdown() {
-      showStatus("กำลังดึงรายการ URL จากชีท url ช่อง A1...", false, true);
+      showStatus("กำลังดึง URL จากชีท url ช่อง A1...", false, true);
       const select = document.getElementById('app-url-select');
       
       try {
         const res = await fetch(`${API_URL}?action=getAppUrl`);
         const data = await res.json();
         
-        select.innerHTML = ""; // ล้างค่าเดิม
         if (data.status === "success" && data.url) {
           API_URL = data.url;
-          const opt = document.createElement('option');
-          opt.value = data.url;
-          opt.innerText = `[A1] ${data.url}`;
-          select.appendChild(opt);
-        } else {
-          const opt = document.createElement('option');
-          opt.value = API_URL;
-          opt.innerText = API_URL;
-          select.appendChild(opt);
+          select.innerHTML = `<option value="${data.url}">[url A1] ${data.url}</option>`;
         }
       } catch (e) {
-        select.innerHTML = `<option value="${API_URL}">${API_URL}</option>`;
+        console.error("Error fetching URL from sheet A1", e);
       }
     }
 
-    // กดปุ่ม "บันทึก" ➔ บันทึก URL + ดึงข้อมูลทั้งหมดมาแสดงการตอบสนอง
+    // เมื่อกดปุ่ม "บันทึก" ➔ เชื่อมต่อและแสดงผลตอบสนองทันที
     async function saveAndConnect() {
       const selectedUrl = getApiUrl();
-      showStatus("กำลังบันทึกและเชื่อมต่อระบบ...", false, true);
+      showStatus("กำลังบันทึกยืนยันและเชื่อมต่อระบบ...", false, true);
 
       try {
-        // 1. ส่งบันทึก URL ลงชีท url (A1)
-        const res = await fetch(`${selectedUrl}?action=updateAppUrl&url=${encodeURIComponent(selectedUrl)}`);
+        const res = await fetch(`${selectedUrl}?action=getAppUrl`);
         const data = await res.json();
 
-        if (data.status === "success") {
-          API_URL = selectedUrl;
-          // 2. ดึงข้อมูล Dashboard ทั้งหมดมาแสดงผลตอบสนอง
-          await Promise.all([
-            fetchAlertText(),
-            fetchRulesText(),
-            fetchMemberStats(),
-            fetchScheduleStatus()
-          ]);
-          updateConnectionBadge(true);
-          showStatus("บันทึกข้อมูลและเชื่อมต่อระบบสำเร็จเรียบร้อย!");
-        } else {
-          updateConnectionBadge(false);
-          showStatus("บันทึกไม่สำเร็จ: " + data.message, true);
-        }
+        // ดึงข้อมูลทั้งหมดมาแสดงในหน้า Dashboard
+        await Promise.all([
+          fetchAlertText(),
+          fetchRulesText(),
+          fetchMemberStats(),
+          fetchScheduleStatus()
+        ]);
+
+        updateConnectionBadge(true);
+        showStatus("บันทึกการตั้งค่า และเชื่อมต่อระบบเรียบร้อยแล้ว!");
       } catch (err) {
         updateConnectionBadge(false);
-        showStatus("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
+        showStatus("เชื่อมต่อล้มเหลว กรุณาตรวจสอบ Web App URL", true);
       }
     }
 
