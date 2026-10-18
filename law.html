@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>namobot Mini App Admin</title>
+  <title>กฎระเบียบกลุ่ม - namobot Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { background-color: #f3f4f6; font-family: 'Sukhumvit Set', 'Kanit', sans-serif; }
   </style>
 </head>
-<body class="pb-20 max-w-md mx-auto bg-slate-50 min-h-screen shadow-lg relative">
+<body class="pb-24 max-w-md mx-auto bg-slate-50 min-h-screen shadow-lg relative">
 
   <!-- Header -->
   <header class="bg-emerald-600 text-white p-4 sticky top-0 z-50 shadow-md flex items-center justify-between">
     <div class="flex items-center space-x-2">
-      <i class="fa-solid fa-robot text-xl"></i>
-      <h1 class="font-bold text-lg">namobot Admin App</h1>
+      <i class="fa-solid fa-scroll text-xl"></i>
+      <h1 class="font-bold text-lg">กฎระเบียบกลุ่ม</h1>
     </div>
-    <span class="bg-emerald-700 text-xs px-2 py-1 rounded-full border border-emerald-400">v1.1</span>
+    <span class="bg-emerald-700 text-xs px-2 py-1 rounded-full border border-emerald-400">namobot</span>
   </header>
 
   <!-- Notification Toast -->
@@ -28,80 +30,45 @@
   </div>
 
   <!-- Content Container -->
-  <main class="p-4">
-    
-    <!-- URL Configuration Section -->
-    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
-      <label class="block text-xs font-semibold text-gray-500 mb-1">
+  <main class="p-4 space-y-4">
+
+    <!-- LIFF User Profile Status Card -->
+    <section id="userCard" class="bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img id="userAvatar" class="w-10 h-10 rounded-full bg-slate-200 border border-emerald-200 object-cover" src="https://via.placeholder.com/40?text=USER" alt="Avatar" />
+        <div>
+          <p id="userName" class="text-xs font-bold text-gray-800">กำลังเชื่อมต่อ LIFF...</p>
+          <p id="userId" class="text-[10px] text-gray-400 font-mono">LINE User ID</p>
+        </div>
+      </div>
+      <span id="liffBadge" class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-medium">LIFF Init</span>
+    </section>
+
+    <!-- API Config Card -->
+    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <label class="block text-xs font-semibold text-gray-600 mb-1">
         <i class="fa-solid fa-link text-emerald-600 mr-1"></i> Google Apps Script Web App URL
       </label>
       <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec" 
-             class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-gray-50">
-      <button onclick="saveApiUrl()" class="mt-2 w-full bg-slate-800 text-white text-xs py-2 rounded-lg font-medium hover:bg-slate-700 active:scale-[0.98] transition">
+             class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-gray-50 transition">
+      <button onclick="saveApiUrl()" class="mt-2.5 w-full bg-slate-800 text-white text-xs py-2.5 rounded-lg font-medium hover:bg-slate-700 active:scale-[0.98] transition shadow-sm">
         บันทึกการตั้งค่า API URL
       </button>
     </section>
 
-    <!-- Tab 1: Welcome & Alert Editor -->
-    <div id="tab-alert-content" class="tab-content space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div class="flex justify-between items-center mb-2">
-          <label class="text-sm font-bold text-gray-700 flex items-center">
-            <i class="fa-solid fa-pen-to-square text-emerald-600 mr-2"></i> แก้ไขข้อความต้อนรับ
-          </label>
-          <button onclick="fetchAlertData()" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-            <i class="fa-solid fa-rotate mr-1"></i> ดึงข้อความล่าสุด
-          </button>
-        </div>
-        <textarea id="alertTextarea" rows="4" oninput="updatePreview()" 
-                  class="w-full text-xs p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" 
-                  placeholder="กำลังโหลดข้อมูล..."></textarea>
-        
-        <div class="mt-3 flex space-x-2">
-          <button onclick="saveAlertData()" class="flex-1 bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:bg-emerald-700 active:scale-[0.98] transition flex items-center justify-center">
-            <i class="fa-solid fa-floppy-disk mr-1.5"></i> บันทึกลง Sheet
-          </button>
-          <button onclick="triggerDailyAlert()" class="bg-sky-600 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow-sm hover:bg-sky-700 active:scale-[0.98] transition flex items-center justify-center">
-            <i class="fa-solid fa-paper-plane mr-1"></i> ส่งต้อนรับ
-          </button>
-        </div>
+    <!-- Rules Content Card -->
+    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+        <h2 class="text-sm font-bold text-gray-800 flex items-center">
+          <i class="fa-solid fa-shield-halved text-emerald-600 mr-2"></i> ข้อความกฎระเบียบ
+        </h2>
+        <button onclick="copyRulesText()" class="text-xs bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-md border border-emerald-200 hover:bg-emerald-100 font-medium active:scale-95 transition flex items-center">
+          <i class="fa-solid fa-copy mr-1"></i> คัดลอก
+        </button>
       </div>
 
-      <!-- Preview Box -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-          <i class="fa-solid fa-eye text-emerald-600 mr-1.5"></i> ตัวอย่าง Flex Message
-        </h3>
-        <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white max-w-[280px] mx-auto">
-          <div class="bg-[#06C755] p-2.5 text-white font-bold text-xs text-center">
-            🎉 ยินดีต้อนรับเข้าสู่กลุ่มค่ะ!
-          </div>
-          <div class="p-3 bg-white text-center">
-            <div id="flexPreviewText" class="text-xs font-bold text-gray-800 leading-relaxed whitespace-pre-wrap">
-              กำลังรอข้อความ...
-            </div>
-          </div>
-          <div class="p-2.5 bg-[#F7F8FA] border-t border-gray-100 space-y-1.5">
-            <div class="bg-[#06C755] text-white text-[11px] font-bold py-1.5 text-center rounded-md">📖 รายละเอียดใน Note</div>
-            <div class="bg-[#17A2B8] text-white text-[11px] font-bold py-1.5 text-center rounded-md">🎮 เล่นเกม</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab 2: Group Rules Page (หน้าใหม่: กฎกลุ่ม) -->
-    <div id="tab-rules-content" class="tab-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="text-sm font-bold text-gray-800 flex items-center">
-            <i class="fa-solid fa-scroll text-emerald-600 mr-2"></i> กฎระเบียบประจำกลุ่ม
-          </h3>
-          <button onclick="copyRulesText()" class="text-xs bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-md border border-emerald-200 hover:bg-emerald-100 font-medium">
-            <i class="fa-solid fa-copy mr-1"></i> คัดลอกข้อความ
-          </button>
-        </div>
-
-        <div id="rulesCard" class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs leading-relaxed text-gray-700 whitespace-pre-wrap">สวัสดีค่ะห้องนี้เอาไว้สำหรับกัลยาณมิตรในห้องนะโมพุทธายะ หากมีอะไรหรือสอบถามแลกเปลี่ยนความรู้กันสามารถพูดคุยกันในนี้ได้นะคะ ถ้าใครไม่สะดวกกดปิดเสียงไว้ได้เลยค่ะ 
+      <!-- Raw Rules Text Area -->
+      <div id="rulesCard" class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs leading-relaxed text-gray-700 whitespace-pre-wrap">สวัสดีค่ะห้องนี้เอาไว้สำหรับกัลยาณมิตรในห้องนะโมพุทธายะ หากมีอะไรหรือสอบถามแลกเปลี่ยนความรู้กันสามารถพูดคุยกันในนี้ได้นะคะ ถ้าใครไม่สะดวกกดปิดเสียงไว้ได้เลยค่ะ 
 
 ขอมีกฎระเบียบเล็กๆนะคะ
 - เราจะไม่ยุ่งในเรื่องของการนับถือสิ่งศักดิ์สิทธิ์ของใคร
@@ -111,61 +78,66 @@
 
 หากใครทำไม่ได้หรือมีปัญหา ทีมนะโม ต้องขออนุญาตนำออกจากกลุ่มนะคะ</div>
 
-        <button onclick="sendGroupRulesFlex()" class="mt-4 w-full bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:bg-emerald-700 active:scale-[0.98] transition flex items-center justify-center">
-          <i class="fa-solid fa-paper-plane mr-2"></i> ส่งข้อความกฎกลุ่มเข้าแชต LINE
-        </button>
+      <!-- Action Button for Web Hook / API -->
+      <button onclick="sendGroupRulesFlex()" class="w-full bg-emerald-600 text-white text-xs font-bold py-3 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-paper-plane text-sm"></i>
+        <span>ส่งข้อความกฎกลุ่มเข้าแชต LINE ทุกกลุ่ม</span>
+      </button>
+
+      <!-- Action Button for Direct LIFF Share Target Picker -->
+      <button onclick="shareRulesViaLiff()" class="w-full bg-slate-100 text-emerald-700 border border-emerald-300 text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-50 active:scale-[0.98] transition flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-share-nodes text-sm"></i>
+        <span>แชร์กฎกลุ่มไปยังแชต (Share Target)</span>
+      </button>
+    </section>
+
+    <!-- Flex Message Preview Card -->
+    <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
+        <i class="fa-solid fa-eye text-emerald-600 mr-1.5"></i> ตัวอย่างการแสดงผล Flex Message
+      </h3>
+      
+      <!-- Flex Preview Mockup -->
+      <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white max-w-[300px] mx-auto">
+        <div class="bg-[#06C755] p-2.5 text-white font-bold text-xs text-center flex items-center justify-center space-x-1">
+          <span>📌 กฎระเบียบประจำกลุ่ม</span>
+        </div>
+        <div class="p-3.5 bg-white text-left">
+          <p class="text-[11px] text-gray-700 leading-relaxed whitespace-pre-wrap">สวัสดีค่ะห้องนี้เอาไว้สำหรับกัลยาณมิตรในห้องนะโมพุทธายะ หากมีอะไรหรือสอบถามแลกเปลี่ยนความรู้กันสามารถพูดคุยกันในนี้ได้นะคะ ถ้าใครไม่สะดวกกดปิดเสียงไว้ได้เลยค่ะ 
+
+ขอมีกฎระเบียบเล็กๆนะคะ
+- เราจะไม่ยุ่งในเรื่องของการนับถือสิ่งศักดิ์สิทธิ์ของใคร
+- เราจะไม่ทักหลังบ้าน เพื่อขอคำปรึกษาแยกส่วนตัว
+- เราจะไม่พูดถึงเงินทอง หรือแม้แต่ขอหยิบยืมเงิน 
+- เราเข้ามาเพื่อที่จะช่วยเหลือซึ่งกันและกัน แลกเปลี่ยนความคิดเห็น
+
+หากใครทำไม่ได้หรือมีปัญหา ทีมนะโม ต้องขออนุญาตนำออกจากกลุ่มนะคะ</p>
+        </div>
       </div>
-    </div>
-
-    <!-- Tab 3: Members & Groups Viewer -->
-    <div id="tab-members-content" class="tab-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="text-sm font-bold text-gray-700 flex items-center">
-            <i class="fa-solid fa-users text-emerald-600 mr-2"></i> รายชื่อกลุ่มและสมาชิก
-          </h3>
-          <button onclick="fetchMemberData()" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-            <i class="fa-solid fa-rotate mr-1"></i> รีเฟรช
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-center">
-            <span class="text-[10px] text-emerald-600 font-bold block uppercase">กลุ่มไลน์ทั้งหมด</span>
-            <span id="groupCount" class="text-xl font-bold text-emerald-700">0</span>
-          </div>
-          <div class="bg-sky-50 border border-sky-100 p-3 rounded-lg text-center">
-            <span class="text-[10px] text-sky-600 font-bold block uppercase">ผู้ใช้ทั่วไป</span>
-            <span id="userCount" class="text-xl font-bold text-sky-700">0</span>
-          </div>
-        </div>
-
-        <div id="membersList" class="space-y-2 max-h-80 overflow-y-auto text-xs pr-1">
-          <p class="text-center text-gray-400 py-4">กดปุ่มรีเฟรชเพื่อโหลดข้อมูล</p>
-        </div>
-      </div>
-    </div>
+    </section>
 
   </main>
 
-  <!-- Bottom Navigation -->
-  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex justify-around p-2 z-50">
-    <button onclick="switchTab('alert')" id="nav-alert" class="flex-1 py-1 text-emerald-600 font-bold text-xs flex flex-col items-center">
-      <i class="fa-solid fa-pen-to-square text-base mb-0.5"></i>
-      <span>ข้อความต้อนรับ</span>
-    </button>
-    <button onclick="switchTab('rules')" id="nav-rules" class="flex-1 py-1 text-gray-400 font-bold text-xs flex flex-col items-center">
-      <i class="fa-solid fa-scroll text-base mb-0.5"></i>
-      <span>กฎกลุ่ม</span>
-    </button>
-    <button onclick="switchTab('members')" id="nav-members" class="flex-1 py-1 text-gray-400 font-bold text-xs flex flex-col items-center">
-      <i class="fa-solid fa-users text-base mb-0.5"></i>
-      <span>สมาชิก/กลุ่ม</span>
+  <!-- Bottom Bar Navigation -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex justify-between items-center p-3 z-50">
+    <a href="index.html" class="flex items-center space-x-1.5 text-xs text-gray-500 hover:text-emerald-600 font-semibold px-3 py-1.5 rounded-lg hover:bg-gray-100 transition">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>กลับหน้าหลัก</span>
+    </a>
+    <button onclick="closeLiffWindow()" class="bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold px-3.5 py-1.5 rounded-lg hover:bg-rose-100 transition flex items-center space-x-1">
+      <i class="fa-solid fa-xmark"></i>
+      <span>ปิดหน้าต่าง</span>
     </button>
   </nav>
 
   <script>
-    document.getElementById('scriptUrl').value = localStorage.getItem('NAMOBOT_API_URL') || '';
+    const MY_LIFF_ID = "2012072125-RXgWMeiV"; // LIFF ID ของคุณ
+
+    // Initialize Page Data & LIFF SDK
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById('scriptUrl').value = localStorage.getItem('NAMOBOT_API_URL') || '';
+      initLiff();
+    });
 
     function showToast(msg, isSuccess = true) {
       const toast = document.getElementById('toast');
@@ -181,7 +153,6 @@
       if(!url) return showToast('กรุณากรอก Web App URL', false);
       localStorage.setItem('NAMOBOT_API_URL', url);
       showToast('บันทึก API URL เรียบร้อย');
-      fetchAlertData();
     }
 
     function getApiUrl() {
@@ -193,12 +164,136 @@
       return url;
     }
 
-    function updatePreview() {
-      const text = document.getElementById('alertTextarea').value;
-      document.getElementById('flexPreviewText').innerText = text || 'ไม่มีข้อความแสดงผล';
+    function copyRulesText() {
+      const rulesText = document.getElementById('rulesCard').innerText;
+      navigator.clipboard.writeText(rulesText).then(() => {
+        showToast('คัดลอกกฎกลุ่มเรียบร้อย');
+      }).catch(() => {
+        showToast('คัดลอกไม่สำเร็จ', false);
+      });
     }
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('nav button').forEach(el => {
-        el.classList.remove('text
+    // Initialize LIFF App
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+        const badge = document.getElementById('liffBadge');
+
+        if (liff.isLoggedIn()) {
+          badge.innerText = "LIFF Ready";
+          badge.className = "bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-medium";
+
+          const profile = await liff.getProfile();
+          document.getElementById('userName').innerText = profile.displayName;
+          document.getElementById('userId').innerText = profile.userId;
+          if (profile.pictureUrl) {
+            document.getElementById('userAvatar').src = profile.pictureUrl;
+          }
+        } else {
+          badge.innerText = "Guest Mode";
+          document.getElementById('userName').innerText = "ไม่ได้เข้าสู่ระบบ LINE";
+        }
+      } catch (err) {
+        console.error("LIFF Init Error:", err);
+        const badge = document.getElementById('liffBadge');
+        badge.innerText = "Browser Mode";
+        document.getElementById('userName').innerText = "โหมดทดสอบภายนอก";
+      }
+    }
+
+    // Send Group Rules via Backend API
+    async function sendGroupRulesFlex() {
+      const apiUrl = getApiUrl();
+      if(!apiUrl) return;
+
+      showToast('กำลังส่งข้อความกฎกลุ่ม...');
+      try {
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'sendRules' })
+        });
+        const data = await res.json();
+        if(data.status === 'success') {
+          showToast('ส่งข้อความกฎกลุ่มสำเร็จแล้ว');
+        } else {
+          showToast('ส่งไม่สำเร็จ: ' + data.message, false);
+        }
+      } catch(e) {
+        showToast('ส่งไม่สำเร็จ ตรวจสอบการเชื่อมต่อ', false);
+      }
+    }
+
+    // Share Rules directly using LINE Share Target Picker
+    async function shareRulesViaLiff() {
+      if (!liff.isLoggedIn()) {
+        showToast('กรุณาเปิดผ่านแอป LINE เพื่อใช้งาน', false);
+        return;
+      }
+
+      if (liff.isApiAvailable('shareTargetPicker')) {
+        try {
+          const rulesText = document.getElementById('rulesCard').innerText;
+          const result = await liff.shareTargetPicker([
+            {
+              "type": "flex",
+              "altText": "📌 กฎระเบียบของกลุ่มนะโมพุทธายะ",
+              "contents": {
+                "type": "bubble",
+                "size": "mega",
+                "header": {
+                  "type": "box",
+                  "layout": "vertical",
+                  "backgroundColor": "#06C755",
+                  "paddingAll": "12px",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "📌 กฎระเบียบประจำกลุ่ม",
+                      "weight": "bold",
+                      "color": "#FFFFFF",
+                      "size": "sm",
+                      "align": "center"
+                    }
+                  ]
+                },
+                "body": {
+                  "type": "box",
+                  "layout": "vertical",
+                  "paddingAll": "15px",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": rulesText,
+                      "wrap": true,
+                      "weight": "regular",
+                      "size": "xs",
+                      "color": "#333333",
+                      "lineSpacing": "5px"
+                    }
+                  ]
+                }
+              }
+            }
+          ]);
+
+          if (result) {
+            showToast('แชร์ข้อความสำเร็จแล้ว');
+          }
+        } catch (error) {
+          showToast('ยกเลิกการแชร์ หรือเกิดข้อผิดพลาด', false);
+        }
+      } else {
+        showToast('ฟีเจอร์ Share Target Picker ไม่รองรับในเบราว์เซอร์นี้', false);
+      }
+    }
+
+    function closeLiffWindow() {
+      if (liff.isLoggedIn()) {
+        liff.closeWindow();
+      } else {
+        window.close();
+      }
+    }
+  </script>
+</body>
+</html>
