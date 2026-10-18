@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card of the Day</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+  
+  <div class="bg-white/80 backdrop-blur-md border border-slate-100 shadow-sm rounded-3xl p-6 w-full max-w-sm text-center space-y-4">
+    
+    <!-- Title -->
+    <div>
+      <p class="text-[10px] tracking-widest text-slate-400 font-bold uppercase">Daily Guidance</p>
+      <h1 class="text-lg font-bold text-slate-800 mt-1">Cards Of the Days ของคุณ คือ</h1>
+    </div>
+
+    <!-- Image Frame -->
+    <div class="relative overflow-hidden rounded-2xl aspect-[3/4] bg-slate-100 shadow-inner flex items-center justify-center border border-slate-100">
+      <img id="card-image" src="" alt="Card of the Day" class="w-full h-full object-cover transition-all duration-500 opacity-0" onload="this.classList.remove('opacity-0')">
+      <div id="loading-spinner" class="absolute text-slate-300 text-sm">กำลังเปิดการ์ด...</div>
+    </div>
+
+    <!-- Minimal Action Button -->
+    <button onclick="drawCard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-3 rounded-xl transition-all duration-200 active:scale-95 shadow-sm">
+      ✨ สุ่มเปิดการ์ดประจำวันอีกครั้ง
+    </button>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwv8AaKJKjDKqGrh4v0Oskq-o9_yqRptR-E5sY9fP5c5U11aIs7pD_21t6vO2T4X5pS/exec";
+
+    async function drawCard() {
+      const imgEl = document.getElementById('card-image');
+      const spinner = document.getElementById('loading-spinner');
+      
+      imgEl.classList.add('opacity-0');
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${API_URL}?action=getRandomCard`);
+        const data = await res.json();
+        if (data.status === 'success' && data.imageUrl) {
+          imgEl.src = data.imageUrl;
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Auto draw on load
+    drawCard();
+  </script>
+</body>
+</html>
